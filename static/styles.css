@@ -10,6 +10,18 @@
     --border-radius: 12px;
     --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     --transition: all 0.3s ease;
+    
+    /* Status Colors */
+    --status-ativo: #28a745;
+    --status-inativo: #dc3545;
+    --status-pendente: #ffc107;
+    --status-aprovado: #20c997;
+    --status-cancelado: #6c757d;
+    --status-suspenso: #fd7e14;
+    --status-renovado: #6f42c1;
+    --status-vencido: #e83e8c;
+    --status-em-andamento: #007bff;
+    --status-finalizado: #343a40;
 }
 
 * {
@@ -425,14 +437,125 @@ table td {
     font-style: italic;
 }
 
-/* Status Colors */
-.status-active { color: var(--success-color); font-weight: 600; }
-.status-inactive { color: var(--danger-color); font-weight: 600; }
-.status-pending { color: var(--warning-color); font-weight: 600; }
+/* Status Colors - Comprehensive Status Styling */
+.status-cell {
+    padding: 6px 12px !important;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.85em;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-align: center;
+    white-space: nowrap;
+    display: inline-block;
+    min-width: 80px;
+}
 
-.days-expired { color: var(--danger-color); font-weight: 600; }
-.days-expiring { color: var(--warning-color); font-weight: 600; }
-.days-future { color: var(--success-color); font-weight: 600; }
+/* Status específicos com cores distintas */
+.status-ativo,
+.status-active {
+    background: rgba(40, 167, 69, 0.1);
+    color: var(--status-ativo);
+    border: 1px solid rgba(40, 167, 69, 0.3);
+}
+
+.status-inativo,
+.status-inactive {
+    background: rgba(220, 53, 69, 0.1);
+    color: var(--status-inativo);
+    border: 1px solid rgba(220, 53, 69, 0.3);
+}
+
+.status-pendente,
+.status-pending {
+    background: rgba(255, 193, 7, 0.1);
+    color: #856404;
+    border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.status-aprovado,
+.status-approved {
+    background: rgba(32, 201, 151, 0.1);
+    color: var(--status-aprovado);
+    border: 1px solid rgba(32, 201, 151, 0.3);
+}
+
+.status-cancelado,
+.status-cancelled,
+.status-canceled {
+    background: rgba(108, 117, 125, 0.1);
+    color: var(--status-cancelado);
+    border: 1px solid rgba(108, 117, 125, 0.3);
+}
+
+.status-suspenso,
+.status-suspended {
+    background: rgba(253, 126, 20, 0.1);
+    color: var(--status-suspenso);
+    border: 1px solid rgba(253, 126, 20, 0.3);
+}
+
+.status-renovado,
+.status-renewed {
+    background: rgba(111, 66, 193, 0.1);
+    color: var(--status-renovado);
+    border: 1px solid rgba(111, 66, 193, 0.3);
+}
+
+.status-vencido,
+.status-expired {
+    background: rgba(232, 62, 140, 0.1);
+    color: var(--status-vencido);
+    border: 1px solid rgba(232, 62, 140, 0.3);
+}
+
+.status-em-andamento,
+.status-in-progress,
+.status-ongoing {
+    background: rgba(0, 123, 255, 0.1);
+    color: var(--status-em-andamento);
+    border: 1px solid rgba(0, 123, 255, 0.3);
+}
+
+.status-finalizado,
+.status-finished,
+.status-completed {
+    background: rgba(52, 58, 64, 0.1);
+    color: var(--status-finalizado);
+    border: 1px solid rgba(52, 58, 64, 0.3);
+}
+
+/* Status genérico para casos não mapeados */
+.status-default {
+    background: rgba(108, 117, 125, 0.1);
+    color: var(--status-cancelado);
+    border: 1px solid rgba(108, 117, 125, 0.3);
+}
+
+/* Days to expiration styling */
+.days-expired { 
+    color: var(--danger-color); 
+    font-weight: 600;
+    background: rgba(220, 53, 69, 0.1);
+    padding: 4px 8px;
+    border-radius: 12px;
+}
+
+.days-expiring { 
+    color: #856404; 
+    font-weight: 600;
+    background: rgba(255, 193, 7, 0.1);
+    padding: 4px 8px;
+    border-radius: 12px;
+}
+
+.days-future { 
+    color: var(--success-color); 
+    font-weight: 600;
+    background: rgba(40, 167, 69, 0.1);
+    padding: 4px 8px;
+    border-radius: 12px;
+}
 
 /* Toast Notifications */
 .toast-container {
@@ -544,6 +667,12 @@ table td {
         font-size: 0.8em;
     }
     
+    .status-cell {
+        font-size: 0.75em;
+        padding: 4px 8px !important;
+        min-width: 70px;
+    }
+    
     .toast-container {
         left: 10px;
         right: 10px;
@@ -583,6 +712,12 @@ table td {
     
     .filters {
         padding: 15px;
+    }
+    
+    .status-cell {
+        font-size: 0.7em;
+        padding: 3px 6px !important;
+        min-width: 60px;
     }
 }
 

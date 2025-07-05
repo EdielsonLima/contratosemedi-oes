@@ -197,6 +197,49 @@ class ContractPortal {
         this.updateStats();
     }
 
+    // Função para normalizar status e aplicar classe CSS
+    getStatusClass(status) {
+        if (!status) return 'status-default';
+        
+        const normalizedStatus = status.toLowerCase()
+            .replace(/\s+/g, '-')
+            .replace(/[áàâã]/g, 'a')
+            .replace(/[éèê]/g, 'e')
+            .replace(/[íìî]/g, 'i')
+            .replace(/[óòôõ]/g, 'o')
+            .replace(/[úùû]/g, 'u')
+            .replace(/[ç]/g, 'c');
+        
+        // Mapeamento de status para classes CSS
+        const statusMap = {
+            'ativo': 'status-ativo',
+            'active': 'status-ativo',
+            'inativo': 'status-inativo',
+            'inactive': 'status-inativo',
+            'pendente': 'status-pendente',
+            'pending': 'status-pendente',
+            'aprovado': 'status-aprovado',
+            'approved': 'status-aprovado',
+            'cancelado': 'status-cancelado',
+            'cancelled': 'status-cancelado',
+            'canceled': 'status-cancelado',
+            'suspenso': 'status-suspenso',
+            'suspended': 'status-suspenso',
+            'renovado': 'status-renovado',
+            'renewed': 'status-renovado',
+            'vencido': 'status-vencido',
+            'expired': 'status-vencido',
+            'em-andamento': 'status-em-andamento',
+            'in-progress': 'status-em-andamento',
+            'ongoing': 'status-em-andamento',
+            'finalizado': 'status-finalizado',
+            'finished': 'status-finalizado',
+            'completed': 'status-finalizado'
+        };
+        
+        return statusMap[normalizedStatus] || 'status-default';
+    }
+
     renderTable() {
         this.contractsTableBody.innerHTML = "";
         
@@ -217,10 +260,10 @@ class ContractPortal {
             // Contract Number
             row.insertCell().textContent = contract.contractNumber;
             
-            // Status with styling
+            // Status with enhanced styling
             const statusCell = row.insertCell();
-            statusCell.textContent = contract.status;
-            statusCell.className = `status-${contract.status.toLowerCase().replace(/\s+/g, '-')}`;
+            const statusClass = this.getStatusClass(contract.status);
+            statusCell.innerHTML = `<span class="status-cell ${statusClass}">${contract.status}</span>`;
             
             // Company and Supplier
             row.insertCell().textContent = contract.companyName;
@@ -231,24 +274,20 @@ class ContractPortal {
             const endDate = new Date(contract.endDate);
             endDateCell.textContent = endDate.toLocaleDateString('pt-BR');
             
-            // Days to expiration with styling
+            // Days to expiration with enhanced styling
             const today = new Date();
             const diffTime = endDate - today;
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
             
             const diasCell = row.insertCell();
             if (diffDays > 30) {
-                diasCell.textContent = `${diffDays} dias restantes`;
-                diasCell.className = 'days-future';
+                diasCell.innerHTML = `<span class="days-future">${diffDays} dias restantes</span>`;
             } else if (diffDays > 0) {
-                diasCell.textContent = `${diffDays} dias restantes`;
-                diasCell.className = 'days-expiring';
+                diasCell.innerHTML = `<span class="days-expiring">${diffDays} dias restantes</span>`;
             } else if (diffDays === 0) {
-                diasCell.textContent = 'Vence hoje';
-                diasCell.className = 'days-expiring';
+                diasCell.innerHTML = `<span class="days-expiring">Vence hoje</span>`;
             } else {
-                diasCell.textContent = `${Math.abs(diffDays)} dias vencido`;
-                diasCell.className = 'days-expired';
+                diasCell.innerHTML = `<span class="days-expired">${Math.abs(diffDays)} dias vencido</span>`;
             }
             
             // Values
