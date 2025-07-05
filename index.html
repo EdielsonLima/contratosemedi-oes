@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal de Contratos Sienge</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Portal de Contratos Sienge</h1>
+
+        <div class="stats-cards">
+            <div class="card">
+                <h2>Total de Contratos</h2>
+                <p id="totalContracts">...</p>
+            </div>
+            <div class="card">
+                <h2>Valor Total</h2>
+                <p id="totalValue">...</p>
+            </div>
+            <div class="card">
+                <h2>Total de Empresas</h2>
+                <p id="totalCompanies">...</p>
+            </div>
+            <div class="card">
+                <h2>Total de Fornecedores</h2>
+                <p id="totalSuppliers">...</p>
+            </div>
+        </div>
+
+        <div class="filters">
+            <input type="text" id="contractNumberFilter" placeholder="Filtrar por Número do Contrato">
+            <select id="statusFilter">
+                <option value="">Filtrar por Status</option>
+            </select>
+            <select id="companyFilter">
+                <option value="">Filtrar por Empresa</option>
+            </select>
+            <select id="supplierFilter">
+                <option value="">Filtrar por Fornecedor</option>
+            </select>
+            <button id="clearFilters">Limpar Filtros</button>
+        </div>
+
+        <div class="table-container">
+            <table id="contractsTable">
+                <thead>
+                    <tr>
+                        <th>contractNumber</th>
+                        <th>status</th>
+                        <th>companyName</th>
+                        <th>supplierName</th>
+                        <th>endDate</th>
+                        <th>diasVencimento</th>
+                        <th>totalLaborValue</th>
+                        <th>totalMaterialValue</th>
+                        <th>valorTotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Data will be loaded here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
+
+
