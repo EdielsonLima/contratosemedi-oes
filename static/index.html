@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal de Contratos Sienge</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1><i class="fas fa-file-contract"></i> Portal de Contratos Sienge</h1>
+            <div class="header-actions">
+                <button id="refreshBtn" class="btn-refresh" title="Atualizar dados">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+                <button id="exportBtn" class="btn-export" title="Exportar para CSV">
+                    <i class="fas fa-download"></i> Exportar
+                </button>
+            </div>
+        </header>
+
+        <div class="loading-overlay" id="loadingOverlay">
+            <div class="loading-spinner">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Carregando contratos...</p>
+            </div>
+        </div>
+
+        <div class="stats-cards">
+            <div class="card total-contracts">
+                <div class="card-icon">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <div class="card-content">
+                    <h2>Total de Contratos</h2>
+                    <p id="totalContracts">...</p>
+                </div>
+            </div>
+            <div class="card total-value">
+                <div class="card-icon">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+                <div class="card-content">
+                    <h2>Valor Total</h2>
+                    <p id="totalValue">...</p>
+                </div>
+            </div>
+            <div class="card total-companies">
+                <div class="card-icon">
+                    <i class="fas fa-building"></i>
+                </div>
+                <div class="card-content">
+                    <h2>Total de Empresas</h2>
+                    <p id="totalCompanies">...</p>
+                </div>
+            </div>
+            <div class="card total-suppliers">
+                <div class="card-icon">
+                    <i class="fas fa-truck"></i>
+                </div>
+                <div class="card-content">
+                    <h2>Total de Fornecedores</h2>
+                    <p id="totalSuppliers">...</p>
+                </div>
+            </div>
+            <div class="card expiring-contracts">
+                <div class="card-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="card-content">
+                    <h2>Contratos Vencendo</h2>
+                    <p id="expiringContracts">...</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="filters-section">
+            <div class="filters-header">
+                <h3><i class="fas fa-filter"></i> Filtros</h3>
+                <button id="toggleFilters" class="btn-toggle">
+                    <i class="fas fa-chevron-up"></i>
+                </button>
+            </div>
+            <div class="filters" id="filtersContainer">
+                <div class="filter-group">
+                    <label for="contractNumberFilter">Número do Contrato</label>
+                    <input type="text" id="contractNumberFilter" placeholder="Digite o número do contrato">
+                </div>
+                <div class="filter-group">
+                    <label for="statusFilter">Status</label>
+                    <select id="statusFilter">
+                        <option value="">Todos os status</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="companyFilter">Empresa</label>
+                    <select id="companyFilter">
+                        <option value="">Todas as empresas</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="supplierFilter">Fornecedor</label>
+                    <select id="supplierFilter">
+                        <option value="">Todos os fornecedores</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="dateRangeFilter">Período de Vencimento</label>
+                    <select id="dateRangeFilter">
+                        <option value="">Todos os períodos</option>
+                        <option value="expired">Vencidos</option>
+                        <option value="expiring-30">Vencem em 30 dias</option>
+                        <option value="expiring-60">Vencem em 60 dias</option>
+                        <option value="future">Futuros</option>
+                    </select>
+                </div>
+                <div class="filter-actions">
+                    <button id="clearFilters" class="btn-clear">
+                        <i class="fas fa-times"></i> Limpar Filtros
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-section">
+            <div class="table-header">
+                <h3><i class="fas fa-table"></i> Contratos</h3>
+                <div class="table-info">
+                    <span id="tableInfo">Mostrando 0 contratos</span>
+                </div>
+            </div>
+            <div class="table-container">
+                <table id="contractsTable">
+                    <thead>
+                        <tr>
+                            <th data-sort="contractNumber">
+                                Número do Contrato
+                                <i class="fas fa-sort sort-icon"></i>
+                            </th>
+                            <th data-sort="status">
+                                Status
+                                <i class="fas fa-sort sort-icon"></i>
+                            </th>
+                            <th data-sort="companyName">
+                                Empresa
+                                <i class="fas fa-sort sort-icon"></i>
+                            </th>
+                            <th data-sort="supplierName">
+                                Fornecedor
+                                <i class="fas fa-sort sort-icon"></i>
+                            </th>
+                            <th data-sort="endDate">
+                                Data de Vencimento
+                                <i class="fas fa-sort sort-icon"></i>
+                            </th>
+                            <th data-sort="diasVencimento">
+                                Dias para Vencimento
+                                <i class="fas fa-sort sort-icon"></i>
+                            </th>
+                            <th data-sort="totalLaborValue">
+                                Valor Mão de Obra
+                                <i class="fas fa-sort sort-icon"></i>
+                            </th>
+                            <th data-sort="totalMaterialValue">
+                                Valor Material
+                                <i class="fas fa-sort sort-icon"></i>
+                            </th>
+                            <th data-sort="valorTotal">
+                                Valor Total
+                                <i class="fas fa-sort sort-icon"></i>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Data will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
