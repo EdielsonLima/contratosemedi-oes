@@ -136,6 +136,79 @@ app.get('/api/contracts', async (req, res) => {
     }
 });
 
+// Rota para buscar medições da API Sienge
+app.get('/api/measurements', async (req, res) => {
+    try {
+        console.log('🔄 Buscando medições da API Sienge...');
+        
+        const allMeasurements = [];
+        let offset = 0;
+        const limit = 200;
+
+        // Codifica as credenciais em Base64 para Basic Auth
+        const credentials = Buffer.from(`${SIENGE_USER}:${SIENGE_PASSWORD}`).toString('base64');
+
+        const headers = {
+            'Authorization': `Basic ${credentials}`,
+            'Content-Type': 'application/json'
+        };
+
+        const measurementsEndpoint = "https://api.sienge.com.br/silvapacker/public/api/v1/supply-contracts/measurements/all";
+
+        while (true) {
+            const params = new URLSearchParams({
+                limit: limit.toString(),
+                offset: offset.toString()
+            });
+
+            const url = `${measurementsEndpoint}?${params}`;
+            console.log(`📡 Buscando página ${Math.floor(offset/limit) + 1}: ${url}`);
+
+            try {
+                const response = await fetch(url, { headers });
+                
+                if (!response.ok) {
+                    console.error(`❌ Erro ${response.status} na página ${Math.floor(offset/limit) + 1}`);
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                const measurementsPage = data.results || [];
+                console.log(`📊 Página ${Math.floor(offset/limit) + 1}: ${measurementsPage.length} medições`);
+
+                if (measurementsPage.length === 0) {
+                    break;
+                }
+
+                allMeasurements.push(...measurementsPage);
+                offset += limit;
+
+                // Debug: mostrar estrutura da primeira medição
+                if (allMeasurements.length === measurementsPage.length && measurementsPage.length > 0) {
+                    console.log('🔍 Estrutura da primeira medição:');
+                    console.log(JSON.stringify(measurementsPage[0], null, 2));
+                    console.log('🔍 Campos disponíveis:', Object.keys(measurementsPage[0]));
+                }
+
+            } catch (fetchError) {
+                console.error(`💥 Erro na página ${Math.floor(offset/limit) + 1}:`, fetchError.message);
+                break;
+            }
+        }
+
+        console.log(`✅ TOTAL de medições encontradas: ${allMeasurements.length}`);
+        
+        res.json(allMeasurements);
+
+    } catch (error) {
+        console.error('❌ Erro ao buscar medições:', error);
+        res.status(500).json({
+            error: `Erro ao buscar medições: ${error.message}`,
+            details: error.stack
+        });
+    }
+});
+
 // Rota para buscar anexos de um contrato
 app.get('/api/contracts/:contractNumber/attachments', async (req, res) => {
     try {

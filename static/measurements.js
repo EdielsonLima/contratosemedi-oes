@@ -129,8 +129,8 @@ class MeasurementsPortal {
             }
             this.allContracts = await contractsResponse.json();
             
-            // Generate measurements data based on contracts
-            this.generateMeasurementsFromContracts();
+            // Load real measurements from API
+            await this.loadRealMeasurements();
             
             this.populateFilters();
             this.applyFilters();
@@ -151,7 +151,80 @@ class MeasurementsPortal {
         }
     }
 
+    async loadRealMeasurements() {
+        console.log('🔄 Carregando medições reais da API...');
+        
+        try {
+            // Buscar medições da API real
+            const response = await fetch("/api/measurements");
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const measurements = await response.json();
+            console.log(`✅ ${measurements.length} medições carregadas da API`);
+            
+            // Processar e enriquecer os dados das medições
+            this.allMeasurements = this.processMeasurements(measurements);
+            
+        } catch (error) {
+            console.error('❌ Erro ao carregar medições da API:', error);
+            // Em caso de erro, usar dados simulados como fallback
+            console.log('⚠️ Usando dados simulados como fallback...');
+            this.generateMeasurementsFromContracts();
+        }
+    }
+
+    processMeasurements(measurements) {
+        console.log('🔧 Processando medições da API...');
+        
+        return measurements.map((measurement, index) => {
+            // Calcular valores
+            const laborValue = parseFloat(measurement.totalLaborValue) || 0;
+            const materialValue = parseFloat(measurement.totalMaterialValue) || 0;
+            const totalValue = laborValue + materialValue;
+            
+            // Calcular caução (5% do valor total)
+            const retentionValue = totalValue * 0.05;
+            const liquidValue = totalValue - retentionValue;
+            
+            // Encontrar contrato correspondente
+            const contract = this.allContracts.find(c => 
+                c.id === measurement.contractId || 
+                c.contractNumber === measurement.contractNumber ||
+                c.contractId === measurement.supplyContractId
+            );
+            
+            // Formatar data da medição
+            const measurementDate = measurement.measurementDate || measurement.createdAt || new Date().toISOString();
+            const formattedDate = new Date(measurementDate);
+            
+            return {
+                id: measurement.id || index + 1,
+                measurementNumber: String(measurement.measurementNumber || measurement.id || index + 1).padStart(3, '0'),
+                contractId: measurement.contractId || measurement.supplyContractId,
+                contractNumber: measurement.contractNumber || contract?.contractNumber || 'N/A',
+                companyName: contract?.companyName || measurement.companyName || 'N/A',
+                supplierName: contract?.supplierName || measurement.supplierName || 'N/A',
+                measurementDate: formattedDate.toISOString().split('T')[0],
+                period: this.formatPeriod(formattedDate),
+                type: 'MEDICAO',
+                totalLaborValue: laborValue,
+                totalMaterialValue: materialValue,
+                totalValue: totalValue,
+                retentionValue: retentionValue,
+                liquidValue: liquidValue,
+                description: measurement.description || measurement.note || `Medição ${measurement.measurementNumber || index + 1}`,
+                createdAt: measurement.createdAt || measurementDate,
+                updatedAt: measurement.updatedAt || measurementDate,
+                // Campos originais da API
+                originalData: measurement
+            };
+        }).filter(m => m.contractNumber !== 'N/A'); // Filtrar medições sem contrato válido
+    }
+
     generateMeasurementsFromContracts() {
+        console.log('🎲 Gerando dados simulados baseados nos contratos...');
         this.allMeasurements = [];
         let measurementId = 1;
         
@@ -353,12 +426,6 @@ class MeasurementsPortal {
                     <button class="btn-action btn-view" onclick="measurementsPortal.viewMeasurement(${measurement.id})" title="Ver detalhes">
                         <i class="fas fa-eye"></i>
                     </button>
-                    <button class="btn-action btn-edit" onclick="measurementsPortal.editMeasurement(${measurement.id})" title="Editar">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="btn-action btn-delete" onclick="measurementsPortal.deleteMeasurement(${measurement.id})" title="Excluir">
-                        <i class="fas fa-trash"></i>
-                    </button>
                 </div>
             `;
         });
@@ -478,14 +545,6 @@ class MeasurementsPortal {
         document.body.style.overflow = 'hidden';
     }
 
-    editMeasurement(id) {
-        this.showToast('Funcionalidade de edição não disponível - apenas visualização', 'warning');
-    }
-
-    deleteMeasurement(id) {
-        this.showToast('Funcionalidade de exclusão não disponível - apenas visualização', 'warning');
-    }
-
     renderMeasurementDetails(measurement) {
         const measurementDate = new Date(measurement.measurementDate);
         const createdAt = new Date(measurement.createdAt);
@@ -558,6 +617,13 @@ class MeasurementsPortal {
                 <div class="detail-section">
                     <h4><i class="fas fa-comment"></i> Descrição/Observações</h4>
                     <p style="margin: 0; padding: 10px; background: white; border-radius: 8px; border: 1px solid #e9ecef;">${measurement.description}</p>
+                </div>
+            ` : ''}
+
+            ${measurement.originalData ? `
+                <div class="detail-section">
+                    <h4><i class="fas fa-database"></i> Dados Originais da API</h4>
+                    <pre style="background: #f8f9fa; padding: 15px; border-radius: 8px; overflow-x: auto; font-size: 0.8em;">${JSON.stringify(measurement.originalData, null, 2)}</pre>
                 </div>
             ` : ''}
 
