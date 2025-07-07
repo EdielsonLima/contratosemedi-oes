@@ -106,7 +106,7 @@ class ContractPortal {
             console.error("Erro ao buscar contratos:", error);
             this.showToast(`Erro ao carregar dados: ${error.message}`, 'error');
             this.contractsTableBody.innerHTML = `
-                <tr><td colspan="9" class="text-center">
+                <tr><td colspan="11" class="text-center">
                     <i class="fas fa-exclamation-triangle"></i> 
                     Erro ao carregar dados: ${error.message}
                 </td></tr>

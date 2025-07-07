@@ -19,6 +19,7 @@ app.use(express.static(path.join(__dirname, 'static')));
 const SIENGE_USER = "silvapacker-eddy";
 const SIENGE_PASSWORD = "dzTk2FW210bwhTBMfqNuyJAAifFICYGs";
 const SIENGE_API_URL = "https://api.sienge.com.br/silvapacker/public/api/v1/supply-contracts/all";
+const SIENGE_MEASUREMENTS_API_URL = "https://api.sienge.com.br/silvapacker/public/api/v1/supply-contracts/measurements/all";
 
 // Rota para buscar contratos
 app.get('/api/contracts', async (req, res) => {
@@ -75,7 +76,13 @@ app.get('/api/contracts', async (req, res) => {
             contract.valorTotal = laborValue + materialValue;
         });
 
-        res.json(allContracts);
+        // Buscar medições para todos os contratos
+        const allMeasurements = await fetchAllMeasurements(headers);
+        
+        // Calcular valores medidos e saldos para cada contrato
+        const contractsWithMeasurements = calculateMeasurementsData(allContracts, allMeasurements);
+        
+        res.json(contractsWithMeasurements);
 
     } catch (error) {
         console.error('Erro ao buscar contratos:', error);
@@ -85,6 +92,85 @@ app.get('/api/contracts', async (req, res) => {
         });
     }
 });
+
+// Função para buscar todas as medições com paginação
+async function fetchAllMeasurements(headers) {
+    const allMeasurements = [];
+    let offset = 0;
+    const limit = 200;
+
+    while (true) {
+        const params = new URLSearchParams({
+            limit: limit.toString(),
+            offset: offset.toString()
+        });
+
+        const url = `${SIENGE_MEASUREMENTS_API_URL}?${params}`;
+
+        try {
+            const response = await fetch(url, { headers });
+            
+            if (!response.ok) {
+                console.warn(`Erro ao buscar medições (offset ${offset}):`, response.status);
+                break;
+            }
+
+            const data = await response.json();
+            const measurementsPage = data.results || [];
+
+            if (measurementsPage.length === 0) {
+                break;
+            }
+
+            allMeasurements.push(...measurementsPage);
+            offset += limit;
+
+        } catch (fetchError) {
+            console.error('Erro na requisição de medições:', fetchError);
+            break;
+        }
+    }
+
+    console.log(`📊 Total de medições encontradas: ${allMeasurements.length}`);
+    return allMeasurements;
+}
+
+// Função para calcular dados de medições por contrato
+function calculateMeasurementsData(contracts, measurements) {
+    // Agrupar medições por contractId
+    const measurementsByContract = {};
+    
+    measurements.forEach(measurement => {
+        const contractId = measurement.contractId;
+        if (!measurementsByContract[contractId]) {
+            measurementsByContract[contractId] = [];
+        }
+        measurementsByContract[contractId].push(measurement);
+    });
+
+    // Calcular valores para cada contrato
+    return contracts.map(contract => {
+        const contractMeasurements = measurementsByContract[contract.id] || [];
+        
+        // Calcular valor total medido
+        const totalMeasuredValue = contractMeasurements.reduce((sum, measurement) => {
+            const laborValue = parseFloat(measurement.totalLaborValue || 0);
+            const materialValue = parseFloat(measurement.totalMaterialValue || 0);
+            return sum + laborValue + materialValue;
+        }, 0);
+        
+        // Calcular saldo (valor total do contrato - valor medido)
+        const contractTotalValue = parseFloat(contract.valorTotal || 0);
+        const remainingBalance = contractTotalValue - totalMeasuredValue;
+        
+        return {
+            ...contract,
+            valorMedido: totalMeasuredValue,
+            saldoContrato: remainingBalance,
+            numeroMedicoes: contractMeasurements.length
+        };
+    });
+}
 
 // Rota para servir o index.html
 app.get('/', (req, res) => {
