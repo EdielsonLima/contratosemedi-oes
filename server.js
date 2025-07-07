@@ -94,10 +94,13 @@ app.get('/api/contracts', async (req, res) => {
         console.log(`🔍 Debug: Total de contratos: ${allContracts.length}`);
         console.log(`📊 Debug: Total de medições: ${allMeasurements.length}`);
         
+        // Buscar anexos para todos os contratos
+        const contractsWithAttachments = await addAttachmentCounts(allContracts);
+        
         // Se não conseguiu buscar medições, definir valores padrão
         if (allMeasurements.length === 0) {
             console.warn(`⚠️ Como não foram encontradas medições, definindo valores padrão (0) para todas as colunas de medição`);
-            const contractsWithDefaults = allContracts.map(contract => ({
+            const contractsWithDefaults = contractsWithAttachments.map(contract => ({
                 ...contract,
                 valorMedido: 0,
                 saldoContrato: contract.valorTotal || 0,
@@ -107,7 +110,7 @@ app.get('/api/contracts', async (req, res) => {
         }
         
         // Calcular valores medidos e saldos para cada contrato
-        const contractsWithMeasurements = calculateMeasurementsData(allContracts, allMeasurements);
+        const contractsWithMeasurements = calculateMeasurementsData(contractsWithAttachments, allMeasurements);
         
         res.json(contractsWithMeasurements);
 
@@ -436,6 +439,19 @@ function calculateMeasurementsData(contracts, measurements) {
     console.log(`✅ Processamento concluído: ${contractsWithMeasurements.length} contratos têm medições`);
     
     return result;
+}
+
+// Função para adicionar contagem de anexos aos contratos
+async function addAttachmentCounts(contracts) {
+    return contracts.map(contract => {
+        const attachments = Array.from(attachmentsDB.values())
+            .filter(attachment => attachment.contractNumber === contract.contractNumber);
+        
+        return {
+            ...contract,
+            attachmentCount: attachments.length
+        };
+    });
 }
 
 // Rota para servir o index.html

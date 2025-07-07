@@ -942,11 +942,11 @@ table td {
     height: 35px;
     cursor: pointer;
     transition: var(--transition);
-    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 0.9em;
+    margin-right: 8px;
 }
 
 .btn-attachment:hover {
@@ -954,20 +954,18 @@ table td {
     transform: scale(1.1);
 }
 
-.attachment-count {
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    background: var(--danger-color);
+.attachment-counter {
+    background: var(--success-color);
     color: white;
-    border-radius: 50%;
-    width: 18px;
-    height: 18px;
-    font-size: 0.7em;
+    border-radius: 12px;
+    padding: 2px 8px;
+    font-size: 0.75em;
+    font-weight: 600;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 600;
+    min-width: 20px;
+    height: 20px;
 }
 
 /* Responsive Design - Otimizado para diferentes tamanhos */

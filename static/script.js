@@ -351,12 +351,12 @@ class ContractPortal {
             
             // Attachments column
             const attachmentsCell = row.insertCell();
-            const attachmentCount = contract.attachments ? contract.attachments.length : 0;
+            const attachmentCount = contract.attachmentCount || 0;
             attachmentsCell.innerHTML = `
                 <button class="btn-attachment" onclick="contractPortal.openAttachmentModal('${contract.contractNumber}')" title="Gerenciar anexos">
                     <i class="fas fa-paperclip"></i>
-                    ${attachmentCount > 0 ? `<span class="attachment-count">${attachmentCount}</span>` : ''}
                 </button>
+                ${attachmentCount > 0 ? `<span class="attachment-counter">${attachmentCount}</span>` : ''}
             `;
             
             // Days to expiration with enhanced styling and icons
