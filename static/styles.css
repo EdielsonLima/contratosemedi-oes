@@ -387,6 +387,175 @@ body {
     transform: translateY(-2px);
 }
 
+/* Contract Details Panel */
+.contract-details-panel {
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    margin-bottom: 20px;
+    overflow: hidden;
+    border: 2px solid var(--primary-color);
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.contract-details-header {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    color: white;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.contract-details-title {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.contract-details-title h3 {
+    margin: 0;
+    font-size: 1.1em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.contract-details-title span {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 4px 12px;
+    border-radius: 15px;
+    font-size: 0.9em;
+    font-weight: 600;
+}
+
+.btn-close-details {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.2em;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    transition: var(--transition);
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-close-details:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+
+.contract-details-content {
+    padding: 20px;
+}
+
+.contract-basic-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: var(--light-color);
+    border-radius: var(--border-radius);
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.info-item strong {
+    color: var(--dark-color);
+    font-size: 0.85em;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.info-item span {
+    color: #666;
+    font-size: 0.95em;
+}
+
+.contract-object-section {
+    border-top: 1px solid #e9ecef;
+    padding-top: 20px;
+}
+
+.contract-object-section h4 {
+    margin: 0 0 15px 0;
+    color: var(--dark-color);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1em;
+}
+
+.contract-object-content {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: var(--border-radius);
+    padding: 15px;
+    min-height: 80px;
+}
+
+.object-text {
+    color: var(--dark-color);
+    line-height: 1.6;
+    font-size: 0.95em;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.no-object {
+    color: #666;
+    font-style: italic;
+    text-align: center;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 20px;
+}
+
+/* Table Row Selection */
+.clickable-row {
+    transition: var(--transition);
+}
+
+.clickable-row:hover {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%) !important;
+    transform: scale(1.01);
+    cursor: pointer;
+}
+
+.selected-row {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%) !important;
+    border-left: 4px solid var(--primary-color);
+    transform: scale(1.01);
+}
+
+.selected-row:hover {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%) !important;
+}
+
 /* Table Section */
 .table-section {
     background: white;
@@ -1275,6 +1444,21 @@ table td {
     
     .toast.show {
         transform: translateY(0);
+    }
+    
+    .contract-details-header {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+    
+    .contract-basic-info {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .contract-object-content {
+        padding: 12px;
     }
 }
 

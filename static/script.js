@@ -50,8 +50,18 @@ class ContractPortal {
         this.loadingOverlay = document.getElementById("loadingOverlay");
         this.toastContainer = document.getElementById("toastContainer");
         
+        // Contract details panel elements
+        this.contractDetailsPanel = document.getElementById("contractDetailsPanel");
+        this.closeDetailsPanel = document.getElementById("closeDetailsPanel");
+        this.contractDetailsNumber = document.getElementById("contractDetailsNumber");
+        this.detailsCompany = document.getElementById("detailsCompany");
+        this.detailsSupplier = document.getElementById("detailsSupplier");
+        this.detailsStatus = document.getElementById("detailsStatus");
+        this.contractObjectContent = document.getElementById("contractObjectContent");
+        
         // Current contract for modal
         this.currentContract = null;
+        this.selectedContractRow = null;
     }
 
     bindEvents() {
@@ -90,7 +100,13 @@ class ContractPortal {
             if (e.key === 'Escape' && this.attachmentModal.classList.contains('show')) {
                 this.closeModal();
             }
+            if (e.key === 'Escape' && this.contractDetailsPanel.style.display !== 'none') {
+                this.closeContractDetails();
+            }
         });
+        
+        // Contract details panel events
+        this.closeDetailsPanel.addEventListener('click', () => this.closeContractDetails());
     }
 
     showLoading() {
@@ -337,6 +353,19 @@ class ContractPortal {
         this.filteredContracts.forEach(contract => {
             const row = this.contractsTableBody.insertRow();
             
+            // Adicionar evento de clique na linha
+            row.style.cursor = 'pointer';
+            row.addEventListener('click', (e) => {
+                // Não abrir detalhes se clicou no botão de anexos
+                if (e.target.closest('.btn-attachment')) {
+                    return;
+                }
+                this.showContractDetails(contract, row);
+            });
+            
+            // Adicionar classe para hover
+            row.classList.add('clickable-row');
+            
             // Contract Number
             row.insertCell().textContent = contract.contractNumber;
             
@@ -420,6 +449,63 @@ class ContractPortal {
         });
 
         this.tableInfo.textContent = `Mostrando ${this.filteredContracts.length} contratos`;
+    }
+
+    showContractDetails(contract, row) {
+        // Remover seleção anterior
+        if (this.selectedContractRow) {
+            this.selectedContractRow.classList.remove('selected-row');
+        }
+        
+        // Adicionar seleção à nova linha
+        row.classList.add('selected-row');
+        this.selectedContractRow = row;
+        
+        // Preencher informações básicas
+        this.contractDetailsNumber.textContent = `Contrato: ${contract.contractNumber}`;
+        this.detailsCompany.textContent = contract.companyName || 'N/A';
+        this.detailsSupplier.textContent = contract.supplierName || 'N/A';
+        
+        // Status com classe CSS
+        const statusClass = this.getStatusClass(contract.status);
+        this.detailsStatus.innerHTML = `<span class="status-cell ${statusClass}">${contract.status}</span>`;
+        
+        // Preencher objeto do contrato
+        const objectContent = contract.object || contract.note || contract.notes || contract.description || '';
+        
+        if (objectContent && objectContent.trim()) {
+            this.contractObjectContent.innerHTML = `
+                <div class="object-text">${objectContent.replace(/\n/g, '<br>')}</div>
+            `;
+        } else {
+            this.contractObjectContent.innerHTML = `
+                <p class="no-object">
+                    <i class="fas fa-info-circle"></i> 
+                    Nenhuma observação disponível para este contrato.
+                </p>
+            `;
+        }
+        
+        // Mostrar painel
+        this.contractDetailsPanel.style.display = 'block';
+        
+        // Scroll suave para o painel
+        setTimeout(() => {
+            this.contractDetailsPanel.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'start' 
+            });
+        }, 100);
+    }
+    
+    closeContractDetails() {
+        this.contractDetailsPanel.style.display = 'none';
+        
+        // Remover seleção da linha
+        if (this.selectedContractRow) {
+            this.selectedContractRow.classList.remove('selected-row');
+            this.selectedContractRow = null;
+        }
     }
 
     openAttachmentModal(contractNumber) {
