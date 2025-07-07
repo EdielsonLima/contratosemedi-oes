@@ -68,6 +68,7 @@ body {
 }
 
 .btn-refresh,
+.btn-measurements,
 .btn-export {
     padding: 8px 15px;
     border: none;
@@ -86,12 +87,18 @@ body {
     color: white;
 }
 
+.btn-measurements {
+    background: var(--secondary-color);
+    color: white;
+}
+
 .btn-export {
     background: var(--success-color);
     color: white;
 }
 
 .btn-refresh:hover,
+.btn-measurements:hover,
 .btn-export:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
@@ -1361,6 +1368,7 @@ table td {
     }
     
     .btn-refresh,
+    .btn-measurements,
     .btn-export {
         width: 100%;
         justify-content: center;

@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Medições - Silva Packer</title>
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/measurements.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="header-left">
+                <button id="backBtn" class="btn-back" title="Voltar para Contratos">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h1><i class="fas fa-ruler-combined"></i> Controle de Medições</h1>
+            </div>
+            <div class="header-actions">
+                <button id="refreshBtn" class="btn-refresh" title="Atualizar dados">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+                <button id="newMeasurementBtn" class="btn-new" title="Nova Medição">
+                    <i class="fas fa-plus"></i> Nova Medição
+                </button>
+                <button id="exportBtn" class="btn-export" title="Exportar para CSV">
+                    <i class="fas fa-download"></i> Exportar
+                </button>
+            </div>
+        </header>
+
+        <div class="loading-overlay" id="loadingOverlay">
+            <div class="loading-spinner">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Carregando medições...</p>
+            </div>
+        </div>
+
+        <div class="stats-cards">
+            <div class="card total-measurements">
+                <div class="card-icon">
+                    <i class="fas fa-ruler-combined"></i>
+                </div>
+                <div class="card-content">
+                    <h2>Total de Medições</h2>
+                    <p id="totalMeasurements">...</p>
+                </div>
+            </div>
+            <div class="card total-measured-value">
+                <div class="card-icon">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+                <div class="card-content">
+                    <h2>Valor Total Medido</h2>
+                    <p id="totalMeasuredValue">...</p>
+                </div>
+            </div>
+            <div class="card pending-measurements">
+                <div class="card-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="card-content">
+                    <h2>Medições Pendentes</h2>
+                    <p id="pendingMeasurements">...</p>
+                </div>
+            </div>
+            <div class="card approved-measurements">
+                <div class="card-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="card-content">
+                    <h2>Medições Aprovadas</h2>
+                    <p id="approvedMeasurements">...</p>
+                </div>
+            </div>
+            <div class="card avg-measurement-value">
+                <div class="card-icon">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <div class="card-content">
+                    <h2>Valor Médio</h2>
+                    <p id="avgMeasurementValue">...</p>
+                </div>
+            </div>
+            <div class="card contracts-with-measurements">
+                <div class="card-icon">
+                    <i class="fas fa-file-contract"></i>
+                </div>
+                <div class="card-content">
+                    <h2>Contratos com Medições</h2>
+                    <p id="contractsWithMeasurements">...</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="filters-section">
+            <div class="filters-header">
+                <h3><i class="fas fa-filter"></i> Filtros</h3>
+                <button id="toggleFilters" class="btn-toggle">
+                    <i class="fas fa-chevron-up"></i>
+                </button>
+            </div>
+            <div class="filters" id="filtersContainer">
+                <div class="filter-group">
+                    <label for="contractFilter">Contrato</label>
+                    <select id="contractFilter">
+                        <option value="">Todos os contratos</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="statusFilter">Status</label>
+                    <select id="statusFilter">
+                        <option value="">Todos os status</option>
+                        <option value="PENDING">Pendente</option>
+                        <option value="APPROVED">Aprovada</option>
+                        <option value="REJECTED">Rejeitada</option>
+                        <option value="DRAFT">Rascunho</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="companyFilter">Empresa</label>
+                    <select id="companyFilter">
+                        <option value="">Todas as empresas</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="supplierFilter">Fornecedor</label>
+                    <select id="supplierFilter">
+                        <option value="">Todos os fornecedores</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="dateFromFilter">Data Inicial</label>
+                    <input type="date" id="dateFromFilter">
+                </div>
+                <div class="filter-group">
+                    <label for="dateToFilter">Data Final</label>
+                    <input type="date" id="dateToFilter">
+                </div>
+                <div class="filter-actions">
+                    <button id="clearFilters" class="btn-clear">
+                        <i class="fas fa-times"></i> Limpar Filtros
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-section">
+            <div class="table-header">
+                <h3><i class="fas fa-table"></i> Medições</h3>
+                <div class="table-info">
+                    <span id="tableInfo">Mostrando 0 medições</span>
+                </div>
+            </div>
+            <div class="table-container">
+                <table id="measurementsTable">
+                    <thead>
+                        <tr>
+                            <th data-sort="id">
+                                ID
+                                <i class="fas fa-sort sort-icon"></i>
+                            </th>
+                            <th data-sort="contractNumber">
+                                Contrato
+                                <i class="fas fa-sort sort-icon"></i>
+                            </th>
+                            <th data-sort="companyName">
+                                Empresa
+                                <i class="fas fa-sort sort-icon"></i>
+                            </th>
+                            <th data-sort="supplierName">
+                                Fornecedor
+                                <i class="fas fa-sort sort-icon"></i>
+                            </th>
+                            <th data-sort="measurementDate">
+                                Data Medição
+                                <i class="fas fa-sort sort-icon"></i>
+                            </th>
+                            <th data-sort="period">
+                                Período
+                                <i class="fas fa-sort sort-icon"></i>
+                            </th>
+                            <th data-sort="totalLaborValue">
+                                Valor M.O.
+                                <i class="fas fa-sort sort-icon"></i>
+                            </th>
+                            <th data-sort="totalMaterialValue">
+                                Valor Material
+                                <i class="fas fa-sort sort-icon"></i>
+                            </th>
+                            <th data-sort="totalValue">
+                                Valor Total
+                                <i class="fas fa-sort sort-icon"></i>
+                            </th>
+                            <th data-sort="status">
+                                Status
+                                <i class="fas fa-sort sort-icon"></i>
+                            </th>
+                            <th>
+                                Ações
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Data will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Nova/Editar Medição -->
+    <div class="modal-overlay" id="measurementModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-ruler-combined"></i> <span id="modalTitle">Nova Medição</span></h3>
+                <button class="modal-close" id="closeMeasurementModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="measurementForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="modalContractSelect">Contrato *</label>
+                            <select id="modalContractSelect" required>
+                                <option value="">Selecione um contrato</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="modalMeasurementDate">Data da Medição *</label>
+                            <input type="date" id="modalMeasurementDate" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="modalPeriodFrom">Período - De</label>
+                            <input type="date" id="modalPeriodFrom">
+                        </div>
+                        <div class="form-group">
+                            <label for="modalPeriodTo">Período - Até</label>
+                            <input type="date" id="modalPeriodTo">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="modalLaborValue">Valor Mão de Obra</label>
+                            <input type="number" id="modalLaborValue" step="0.01" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="modalMaterialValue">Valor Material</label>
+                            <input type="number" id="modalMaterialValue" step="0.01" min="0">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="modalStatus">Status</label>
+                            <select id="modalStatus">
+                                <option value="DRAFT">Rascunho</option>
+                                <option value="PENDING">Pendente</option>
+                                <option value="APPROVED">Aprovada</option>
+                                <option value="REJECTED">Rejeitada</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="modalTotalValue">Valor Total</label>
+                            <input type="number" id="modalTotalValue" step="0.01" min="0" readonly>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="modalDescription">Descrição/Observações</label>
+                        <textarea id="modalDescription" rows="3" placeholder="Descrição da medição..."></textarea>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" id="cancelMeasurement" class="btn-cancel">
+                            <i class="fas fa-times"></i> Cancelar
+                        </button>
+                        <button type="submit" id="saveMeasurement" class="btn-save">
+                            <i class="fas fa-save"></i> Salvar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Detalhes da Medição -->
+    <div class="modal-overlay" id="measurementDetailsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-info-circle"></i> Detalhes da Medição</h3>
+                <button class="modal-close" id="closeMeasurementDetailsModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="details-content" id="measurementDetailsContent">
+                    <!-- Content will be populated dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="/measurements.js"></script>
+</body>
+</html>

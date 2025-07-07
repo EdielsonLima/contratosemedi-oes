@@ -565,6 +565,11 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'static', 'index.html'));
 });
 
+// Rota para servir a página de medições
+app.get('/measurements', (req, res) => {
+    res.sendFile(path.join(__dirname, 'static', 'measurements.html'));
+});
+
 // Rota catch-all para SPA
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'static', 'index.html'));

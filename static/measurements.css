@@ -1,0 +1,391 @@
+/* Measurements Page Specific Styles */
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.btn-back {
+    background: var(--secondary-color);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1em;
+}
+
+.btn-back:hover {
+    background: #5a4b7c;
+    transform: scale(1.1);
+}
+
+.btn-new {
+    background: var(--success-color);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius);
+    padding: 8px 15px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9em;
+}
+
+.btn-new:hover {
+    background: #218838;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Stats Cards - Measurements specific */
+.card.total-measurements::before { background: var(--primary-color); }
+.card.total-measured-value::before { background: var(--success-color); }
+.card.pending-measurements::before { background: var(--warning-color); }
+.card.approved-measurements::before { background: var(--success-color); }
+.card.avg-measurement-value::before { background: var(--info-color); }
+.card.contracts-with-measurements::before { background: var(--secondary-color); }
+
+.total-measurements .card-icon { background: var(--primary-color); }
+.total-measured-value .card-icon { background: var(--success-color); }
+.pending-measurements .card-icon { background: var(--warning-color); }
+.approved-measurements .card-icon { background: var(--success-color); }
+.avg-measurement-value .card-icon { background: var(--info-color); }
+.contracts-with-measurements .card-icon { background: var(--secondary-color); }
+
+/* Form Styles */
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-group label {
+    font-weight: 600;
+    color: var(--dark-color);
+    font-size: 0.9em;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    padding: 10px 12px;
+    border: 2px solid #e9ecef;
+    border-radius: var(--border-radius);
+    font-size: 0.9em;
+    transition: var(--transition);
+    background: white;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-group input[readonly] {
+    background: #f8f9fa;
+    color: #6c757d;
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #e9ecef;
+}
+
+.btn-cancel,
+.btn-save {
+    padding: 10px 20px;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-weight: 600;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9em;
+}
+
+.btn-cancel {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-save {
+    background: var(--success-color);
+    color: white;
+}
+
+.btn-cancel:hover {
+    background: #5a6268;
+    transform: translateY(-2px);
+}
+
+.btn-save:hover {
+    background: #218838;
+    transform: translateY(-2px);
+}
+
+/* Action Buttons in Table */
+.action-buttons {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+}
+
+.btn-action {
+    padding: 6px 8px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8em;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+}
+
+.btn-view {
+    background: var(--info-color);
+    color: white;
+}
+
+.btn-edit {
+    background: var(--warning-color);
+    color: white;
+}
+
+.btn-delete {
+    background: var(--danger-color);
+    color: white;
+}
+
+.btn-action:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Status Badges for Measurements */
+.measurement-status {
+    padding: 4px 10px;
+    border-radius: 15px;
+    font-weight: 600;
+    font-size: 0.75em;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    text-align: center;
+    white-space: nowrap;
+    display: inline-block;
+    min-width: 70px;
+    border: 1px solid;
+}
+
+.measurement-status.PENDING {
+    background: #fff3cd;
+    color: #856404;
+    border-color: #ffeaa7;
+}
+
+.measurement-status.APPROVED {
+    background: #d4edda;
+    color: #155724;
+    border-color: #c3e6cb;
+}
+
+.measurement-status.REJECTED {
+    background: #f8d7da;
+    color: #721c24;
+    border-color: #f5c6cb;
+}
+
+.measurement-status.DRAFT {
+    background: #e2e3e5;
+    color: #383d41;
+    border-color: #d6d8db;
+}
+
+/* Details Modal Content */
+.details-content {
+    display: grid;
+    gap: 20px;
+}
+
+.detail-section {
+    background: var(--light-color);
+    padding: 15px;
+    border-radius: var(--border-radius);
+    border-left: 4px solid var(--primary-color);
+}
+
+.detail-section h4 {
+    margin: 0 0 15px 0;
+    color: var(--dark-color);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1em;
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.detail-item strong {
+    color: var(--dark-color);
+    font-size: 0.85em;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.detail-item span {
+    color: #666;
+    font-size: 0.95em;
+}
+
+/* Responsive Design for Forms */
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .header-left {
+        gap: 10px;
+    }
+    
+    .header h1 {
+        font-size: 1.2em;
+    }
+    
+    .btn-back {
+        width: 35px;
+        height: 35px;
+        font-size: 1em;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .btn-cancel,
+    .btn-save {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .detail-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+    
+    .header-actions {
+        flex-direction: column;
+        width: 100%;
+        gap: 8px;
+    }
+    
+    .btn-refresh,
+    .btn-new,
+    .btn-export {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Loading states */
+.btn-save.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.btn-save.loading i {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Enhanced table for measurements */
+#measurementsTable th:nth-child(3),
+#measurementsTable th:nth-child(4),
+#measurementsTable td:nth-child(3),
+#measurementsTable td:nth-child(4) {
+    max-width: 150px;
+    min-width: 120px;
+    white-space: normal;
+    word-wrap: break-word;
+    word-break: break-word;
+}
+
+/* Period display */
+.period-display {
+    font-size: 0.8em;
+    color: #666;
+    white-space: nowrap;
+}
+
+/* Value highlighting */
+.value-cell {
+    font-weight: 600;
+    text-align: right;
+}
+
+.value-cell.positive {
+    color: var(--success-color);
+}
+
+.value-cell.zero {
+    color: #6c757d;
+}

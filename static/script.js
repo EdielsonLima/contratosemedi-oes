@@ -35,6 +35,7 @@ class ContractPortal {
         // Button elements
         this.clearFiltersButton = document.getElementById("clearFilters");
         this.refreshButton = document.getElementById("refreshBtn");
+        this.measurementsButton = document.getElementById("measurementsBtn");
         this.exportButton = document.getElementById("exportBtn");
         this.toggleFiltersButton = document.getElementById("toggleFilters");
         
@@ -76,6 +77,7 @@ class ContractPortal {
         // Button events
         this.clearFiltersButton.addEventListener("click", () => this.clearFilters());
         this.refreshButton.addEventListener("click", () => this.loadContracts());
+        this.measurementsButton.addEventListener("click", () => this.goToMeasurements());
         this.exportButton.addEventListener("click", () => this.exportToCSV());
         this.toggleFiltersButton.addEventListener("click", () => this.toggleFilters());
         
@@ -920,6 +922,10 @@ class ContractPortal {
         document.body.removeChild(link);
         
         this.showToast('Arquivo CSV exportado com sucesso!');
+    }
+
+    goToMeasurements() {
+        window.location.href = '/measurements';
     }
 }
 
