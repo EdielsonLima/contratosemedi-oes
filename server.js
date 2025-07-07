@@ -78,6 +78,8 @@ app.get('/api/contracts', async (req, res) => {
 
         // Buscar medições para todos os contratos
         const allMeasurements = await fetchAllMeasurements(headers);
+        console.log(`🔍 Debug: Total de contratos: ${allContracts.length}`);
+        console.log(`📊 Debug: Total de medições: ${allMeasurements.length}`);
         
         // Calcular valores medidos e saldos para cada contrato
         const contractsWithMeasurements = calculateMeasurementsData(allContracts, allMeasurements);
@@ -111,11 +113,14 @@ async function fetchAllMeasurements(headers) {
             const response = await fetch(url, { headers });
             
             if (!response.ok) {
-                console.warn(`Erro ao buscar medições (offset ${offset}):`, response.status);
-                break;
+               console.warn(`⚠️ Erro ao buscar medições (offset ${offset}):`, response.status, response.statusText);
+               const errorText = await response.text();
+               console.warn(`📄 Resposta do erro:`, errorText);
+               break;
             }
 
             const data = await response.json();
+           console.log(`📊 Página ${Math.floor(offset/limit) + 1}: ${measurementsPage.length} medições`);
             const measurementsPage = data.results || [];
 
             if (measurementsPage.length === 0) {
@@ -127,16 +132,25 @@ async function fetchAllMeasurements(headers) {
 
         } catch (fetchError) {
             console.error('Erro na requisição de medições:', fetchError);
+           console.error('📍 URL tentada:', url);
             break;
         }
     }
 
-    console.log(`📊 Total de medições encontradas: ${allMeasurements.length}`);
+   console.log(`✅ TOTAL de medições encontradas: ${allMeasurements.length}`);
+   
+   // Debug: mostrar algumas medições de exemplo
+   if (allMeasurements.length > 0) {
+       console.log(`🔍 Exemplo de medição:`, JSON.stringify(allMeasurements[0], null, 2));
+   }
+   
     return allMeasurements;
 }
 
 // Função para calcular dados de medições por contrato
 function calculateMeasurementsData(contracts, measurements) {
+    console.log(`🔧 Calculando medições para ${contracts.length} contratos com ${measurements.length} medições`);
+    
     // Agrupar medições por contractId
     const measurementsByContract = {};
     
@@ -148,8 +162,10 @@ function calculateMeasurementsData(contracts, measurements) {
         measurementsByContract[contractId].push(measurement);
     });
 
+    console.log(`📋 Contratos com medições: ${Object.keys(measurementsByContract).length}`);
+    
     // Calcular valores para cada contrato
-    return contracts.map(contract => {
+    const result = contracts.map(contract => {
         const contractMeasurements = measurementsByContract[contract.id] || [];
         
         // Calcular valor total medido
@@ -163,6 +179,11 @@ function calculateMeasurementsData(contracts, measurements) {
         const contractTotalValue = parseFloat(contract.valorTotal || 0);
         const remainingBalance = contractTotalValue - totalMeasuredValue;
         
+        // Debug para alguns contratos
+        if (contractMeasurements.length > 0) {
+            console.log(`📊 Contrato ${contract.contractNumber}: ${contractMeasurements.length} medições, Valor medido: R$ ${totalMeasuredValue.toFixed(2)}, Saldo: R$ ${remainingBalance.toFixed(2)}`);
+        }
+        
         return {
             ...contract,
             valorMedido: totalMeasuredValue,
@@ -170,6 +191,9 @@ function calculateMeasurementsData(contracts, measurements) {
             numeroMedicoes: contractMeasurements.length
         };
     });
+   
+   console.log(`✅ Processamento concluído`);
+   return result;
 }
 
 // Rota para servir o index.html

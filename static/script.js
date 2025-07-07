@@ -106,7 +106,7 @@ class ContractPortal {
             console.error("Erro ao buscar contratos:", error);
             this.showToast(`Erro ao carregar dados: ${error.message}`, 'error');
             this.contractsTableBody.innerHTML = `
-                <tr><td colspan="11" class="text-center">
+                <tr><td colspan="12" class="text-center">
                     <i class="fas fa-exclamation-triangle"></i> 
                     Erro ao carregar dados: ${error.message}
                 </td></tr>
@@ -330,10 +330,15 @@ class ContractPortal {
             const diasCell = row.insertCell();
             diasCell.innerHTML = `<span class="${expirationDisplay.class}">${expirationDisplay.icon} ${expirationDisplay.text}</span>`;
             
+            // Valor Total - MOVIDO PARA DEPOIS DE DIAS
+            const totalValue = parseFloat(contract.valorTotal) || 0;
+            row.insertCell().textContent = totalValue.toLocaleString("pt-BR", { 
+                style: "currency", currency: "BRL" 
+            });
+            
             // Values
             const laborValue = parseFloat(contract.totalLaborValue) || 0;
             const materialValue = parseFloat(contract.totalMaterialValue) || 0;
-            const totalValue = parseFloat(contract.valorTotal) || 0;
             
             row.insertCell().textContent = laborValue.toLocaleString("pt-BR", { 
                 style: "currency", currency: "BRL" 
@@ -341,9 +346,36 @@ class ContractPortal {
             row.insertCell().textContent = materialValue.toLocaleString("pt-BR", { 
                 style: "currency", currency: "BRL" 
             });
-            row.insertCell().textContent = totalValue.toLocaleString("pt-BR", { 
+            
+            // Valor Medido
+            const measuredValue = parseFloat(contract.valorMedido) || 0;
+            const measuredCell = row.insertCell();
+            measuredCell.textContent = measuredValue.toLocaleString("pt-BR", { 
                 style: "currency", currency: "BRL" 
             });
+            if (measuredValue > 0) {
+                measuredCell.style.color = '#28a745';
+                measuredCell.style.fontWeight = '600';
+            }
+            
+            // Saldo do Contrato
+            const balance = parseFloat(contract.saldoContrato) || 0;
+            const balanceCell = row.insertCell();
+            balanceCell.textContent = balance.toLocaleString("pt-BR", { 
+                style: "currency", currency: "BRL" 
+            });
+            
+            // Colorir saldo baseado no valor
+            if (balance < 0) {
+                balanceCell.style.color = '#dc3545'; // Vermelho para saldo negativo
+                balanceCell.style.fontWeight = '600';
+            } else if (balance === 0) {
+                balanceCell.style.color = '#6c757d'; // Cinza para saldo zero
+                balanceCell.style.fontWeight = '600';
+            } else {
+                balanceCell.style.color = '#28a745'; // Verde para saldo positivo
+                balanceCell.style.fontWeight = '600';
+            }
         });
 
         this.tableInfo.textContent = `Mostrando ${this.filteredContracts.length} contratos`;
@@ -409,6 +441,9 @@ class ContractPortal {
             } else if (column.includes('Value') || column === 'valorTotal') {
                 aVal = parseFloat(aVal) || 0;
                 bVal = parseFloat(bVal) || 0;
+            } else if (column === 'valorMedido' || column === 'saldoContrato') {
+                aVal = parseFloat(aVal) || 0;
+                bVal = parseFloat(bVal) || 0;
             } else {
                 aVal = String(aVal).toLowerCase();
                 bVal = String(bVal).toLowerCase();
@@ -459,9 +494,11 @@ class ContractPortal {
             'Início',
             'Dias',
             'Situação de Vencimento',
+            'Valor Total',
             'Valor Mão de Obra',
             'Valor Material',
-            'Valor Total'
+            'Valor Medido',
+            'Saldo'
         ];
 
         const csvContent = [
@@ -478,9 +515,11 @@ class ContractPortal {
                     `"${new Date(contract.startDate).toLocaleDateString('pt-BR')}"`,
                     daysToExpiration,
                     `"${expirationDisplay.text}"`,
+                    parseFloat(contract.valorTotal) || 0,
                     parseFloat(contract.totalLaborValue) || 0,
                     parseFloat(contract.totalMaterialValue) || 0,
-                    parseFloat(contract.valorTotal) || 0
+                    parseFloat(contract.valorMedido) || 0,
+                    parseFloat(contract.saldoContrato) || 0
                 ].join(',');
             })
         ].join('\n');
