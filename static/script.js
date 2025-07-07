@@ -15,6 +15,7 @@ class ContractPortal {
         // Stats elements
         this.totalContractsCard = document.getElementById("totalContracts");
         this.totalValueCard = document.getElementById("totalValue");
+        this.totalMeasuredCard = document.getElementById("totalMeasured");
         this.totalCompaniesCard = document.getElementById("totalCompanies");
         this.totalSuppliersCard = document.getElementById("totalSuppliers");
         this.expiringContractsCard = document.getElementById("expiringContracts");
@@ -765,6 +766,12 @@ class ContractPortal {
         // Total value
         const totalValue = contracts.reduce((sum, c) => sum + (parseFloat(c.valorTotal) || 0), 0);
         this.totalValueCard.textContent = totalValue.toLocaleString("pt-BR", { 
+            style: "currency", currency: "BRL" 
+        });
+
+        // Total measured value
+        const totalMeasured = contracts.reduce((sum, c) => sum + (parseFloat(c.valorMedido) || 0), 0);
+        this.totalMeasuredCard.textContent = totalMeasured.toLocaleString("pt-BR", { 
             style: "currency", currency: "BRL" 
         });
 
