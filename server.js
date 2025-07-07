@@ -224,10 +224,6 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'static', 'index.html'));
 });
 
-// Catch-all route
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'static', 'index.html'));
-});
 
 app.listen(PORT, () => {
     console.log(`🚀 Servidor rodando na porta ${PORT}`);
