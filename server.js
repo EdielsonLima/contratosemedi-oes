@@ -222,34 +222,96 @@ async function fetchAllMeasurementsFromEndpoint(endpoint, headers) {
 function calculateMeasurementsData(contracts, measurements) {
     console.log(`🔧 Calculando medições para ${contracts.length} contratos com ${measurements.length} medições`);
     
-    // Agrupar medições por contractId
-    const measurementsByContract = {};
-    
-    measurements.forEach(measurement => {
-        // Tentar diferentes campos possíveis para o ID do contrato
-        const contractId = measurement.contractId || measurement.supplyContractId || measurement.contract_id || measurement.id;
-        
-        if (!measurementsByContract[contractId]) {
-            measurementsByContract[contractId] = [];
-        }
-        measurementsByContract[contractId].push(measurement);
-    });
-
-    console.log(`📋 Contratos com medições: ${Object.keys(measurementsByContract).length}`);
-    console.log(`🔍 IDs de contratos com medições:`, Object.keys(measurementsByContract).slice(0, 10));
-    
     // Debug: mostrar estrutura de uma medição
     if (measurements.length > 0) {
         console.log(`🔍 Estrutura da primeira medição:`, JSON.stringify(measurements[0], null, 2));
+        console.log(`🔍 Campos disponíveis na medição:`, Object.keys(measurements[0]));
     }
     
-    // Calcular valores para cada contrato
-    const result = contracts.map(contract => {
-        // Tentar diferentes campos possíveis para o ID do contrato
-        const contractId = contract.id || contract.contractId || contract.contract_id;
-        const contractMeasurements = measurementsByContract[contractId] || [];
+    // Debug: mostrar estrutura de um contrato
+    if (contracts.length > 0) {
+        console.log(`🔍 Estrutura do primeiro contrato:`, JSON.stringify(contracts[0], null, 2));
+        console.log(`🔍 Campos disponíveis no contrato:`, Object.keys(contracts[0]));
+    }
+    
+    // Agrupar medições por contractId usando diferentes estratégias
+    const measurementsByContract = new Map();
+    
+    measurements.forEach((measurement, index) => {
+        // Tentar diferentes campos possíveis para fazer a ligação
+        const possibleKeys = [
+            measurement.contractId,
+            measurement.supplyContractId, 
+            measurement.contract_id,
+            measurement.id,
+            measurement.contractNumber,
+            measurement.contract_number
+        ].filter(key => key !== undefined && key !== null);
         
-        // Calcular valor total medido
+        if (index < 5) { // Debug para as primeiras 5 medições
+            console.log(`🔍 Medição ${index + 1} - Possíveis chaves:`, possibleKeys);
+        }
+        
+        // Usar a primeira chave válida encontrada
+        const contractKey = possibleKeys[0];
+        
+        if (contractKey) {
+            if (!measurementsByContract.has(contractKey)) {
+                measurementsByContract.set(contractKey, []);
+            }
+            measurementsByContract.get(contractKey).push(measurement);
+        }
+    });
+
+    console.log(`📋 Total de chaves de contratos com medições: ${measurementsByContract.size}`);
+    console.log(`🔍 Primeiras 10 chaves:`, Array.from(measurementsByContract.keys()).slice(0, 10));
+    
+    // Calcular valores para cada contrato
+    const result = contracts.map((contract, index) => {
+        // Tentar diferentes estratégias para encontrar as medições deste contrato
+        const possibleContractKeys = [
+            contract.id,
+            contract.contractId,
+            contract.contract_id,
+            contract.contractNumber,
+            contract.contract_number
+        ].filter(key => key !== undefined && key !== null);
+        
+        if (index < 5) { // Debug para os primeiros 5 contratos
+            console.log(`🔍 Contrato ${contract.contractNumber} - Possíveis chaves:`, possibleContractKeys);
+        }
+        
+        // Procurar medições usando qualquer uma das chaves possíveis
+        let contractMeasurements = [];
+        for (const key of possibleContractKeys) {
+            if (measurementsByContract.has(key)) {
+                contractMeasurements = measurementsByContract.get(key);
+                if (index < 5) {
+                    console.log(`✅ Contrato ${contract.contractNumber} encontrou ${contractMeasurements.length} medições usando chave: ${key}`);
+                }
+                break;
+            }
+        }
+        
+        // Se não encontrou por ID, tentar por número do contrato
+        if (contractMeasurements.length === 0) {
+            for (const [key, measurements] of measurementsByContract.entries()) {
+                // Verificar se alguma medição tem o mesmo número de contrato
+                const matchingMeasurements = measurements.filter(m => 
+                    m.contractNumber === contract.contractNumber ||
+                    m.contract_number === contract.contractNumber
+                );
+                if (matchingMeasurements.length > 0) {
+                    contractMeasurements = matchingMeasurements;
+                    if (index < 5) {
+                        console.log(`✅ Contrato ${contract.contractNumber} encontrou ${contractMeasurements.length} medições por número`);
+                    }
+                    break;
+                }
+            }
+        }
+        
+        // Calcular valor total medido para este contrato específico
         const totalMeasuredValue = contractMeasurements.reduce((sum, measurement) => {
             const laborValue = parseFloat(measurement.totalLaborValue || 0);
             const materialValue = parseFloat(measurement.totalMaterialValue || 0);
@@ -260,9 +322,9 @@ function calculateMeasurementsData(contracts, measurements) {
         const contractTotalValue = parseFloat(contract.valorTotal || 0);
         const remainingBalance = contractTotalValue - totalMeasuredValue;
         
-        // Debug para alguns contratos
-        if (contractMeasurements.length > 0 || contract.contractNumber === '10') {
-            console.log(`📊 Contrato ${contract.contractNumber} (ID: ${contractId}): ${contractMeasurements.length} medições, Valor medido: R$ ${totalMeasuredValue.toFixed(2)}, Saldo: R$ ${remainingBalance.toFixed(2)}`);
+        // Debug para contratos com medições
+        if (contractMeasurements.length > 0) {
+            console.log(`📊 Contrato ${contract.contractNumber}: ${contractMeasurements.length} medições, Valor medido: R$ ${totalMeasuredValue.toFixed(2)}, Saldo: R$ ${remainingBalance.toFixed(2)}`);
         }
         
         return {
@@ -273,12 +335,11 @@ function calculateMeasurementsData(contracts, measurements) {
         };
     });
    
-   // Debug final
-   const contractsWithMeasurements = result.filter(c => c.numeroMedicoes > 0);
-   console.log(`✅ Processamento concluído: ${contractsWithMeasurements.length} contratos têm medições`);
-   
-   console.log(`✅ Processamento concluído`);
-   return result;
+    // Debug final
+    const contractsWithMeasurements = result.filter(c => c.numeroMedicoes > 0);
+    console.log(`✅ Processamento concluído: ${contractsWithMeasurements.length} contratos têm medições`);
+    
+    return result;
 }
 
 // Rota para servir o index.html
