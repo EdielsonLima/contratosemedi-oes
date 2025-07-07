@@ -180,8 +180,19 @@ class MeasurementsPortal {
             const measurements = await response.json();
             console.log(`✅ ${measurements.length} medições carregadas da API`);
             
+            // DEBUG: Mostrar estrutura das medições
+            if (measurements.length > 0) {
+                console.log('🔍 Primeira medição da API:', measurements[0]);
+                console.log('🔍 Campos disponíveis:', Object.keys(measurements[0]));
+            }
+            
             // Processar e enriquecer os dados das medições
             this.allMeasurements = this.processMeasurements(measurements);
+            
+            console.log(`📊 Medições processadas: ${this.allMeasurements.length}`);
+            if (this.allMeasurements.length > 0) {
+                console.log('🔍 Primeira medição processada:', this.allMeasurements[0]);
+            }
             
         } catch (error) {
             console.error('❌ Erro ao carregar medições da API:', error);
@@ -194,7 +205,7 @@ class MeasurementsPortal {
     processMeasurements(measurements) {
         console.log('🔧 Processando medições da API...');
         
-        return measurements.map((measurement, index) => {
+        const processedMeasurements = measurements.map((measurement, index) => {
             // Calcular valores
             const laborValue = parseFloat(measurement.totalLaborValue) || 0;
             const materialValue = parseFloat(measurement.totalMaterialValue) || 0;
@@ -204,11 +215,208 @@ class MeasurementsPortal {
             const retentionValue = totalValue * 0.05;
             const liquidValue = totalValue - retentionValue;
             
-            // Encontrar contrato correspondente
-            const contract = this.allContracts.find(c => 
-                c.id === measurement.contractId || 
-                c.contractNumber === measurement.contractNumber ||
-                c.contractId === measurement.supplyContractId
+            // Encontrar contrato correspondente - múltiplas estratégias
+            let contract = null;
+            
+            // Estratégia 1: Por contractId
+            if (measurement.contractId) {
+                contract = this.allContracts.find(c => c.id === measurement.contractId);
+            }
+            
+            // Estratégia 2: Por supplyContractId
+            if (!contract && measurement.supplyContractId) {
+                contract = this.allContracts.find(c => c.id === measurement.supplyContractId);
+            }
+            
+            // Estratégia 3: Por contractNumber
+            if (!contract && measurement.contractNumber) {
+                contract = this.allContracts.find(c => c.contractNumber === measurement.contractNumber);
+            }
+            
+            // Estratégia 4: Por qualquer campo que contenha número do contrato
+            if (!contract) {
+                const possibleContractNumbers = [
+                    measurement.contractNumber,
+                    measurement.contract_number,
+                    measurement.contractId,
+                    measurement.supplyContractId
+                ].filter(Boolean);
+                
+                for (const contractNum of possibleContractNumbers) {
+                    contract = this.allContracts.find(c => 
+                        c.contractNumber == contractNum || 
+                        c.id == contractNum
+                    );
+                    if (contract) break;
+                }
+            }
+            
+            // DEBUG para medições sem contrato
+            if (!contract) {
+                console.log(`⚠️ Medição sem contrato encontrado:`, {
+                    measurementId: measurement.id,
+                    contractId: measurement.contractId,
+                    supplyContractId: measurement.supplyContractId,
+                    contractNumber: measurement.contractNumber
+                });
+            }
+            
+            // Usar dados do contrato se encontrado, senão usar dados da medição
+            const companyName = contract?.companyName || measurement.companyName || 'Empresa não identificada';
+            const supplierName = contract?.supplierName || measurement.supplierName || 'Fornecedor não identificado';
+            const contractNumber = contract?.contractNumber || measurement.contractNumber || measurement.contractId || measurement.supplyContractId || `MED-${index + 1}`;
+            
+            // Formatar data da medição
+            const measurementDate = measurement.measurementDate || measurement.createdAt || measurement.date || new Date().toISOString();
+            const formattedDate = new Date(measurementDate);
+            
+            return {
+                id: measurement.id || index + 1,
+                measurementNumber: String(measurement.measurementNumber || measurement.id || index + 1).padStart(3, '0'),
+                contractId: measurement.contractId || measurement.supplyContractId,
+                contractNumber: contractNumber,
+                companyName: companyName,
+                supplierName: supplierName,
+                measurementDate: formattedDate.toISOString().split('T')[0],
+                period: this.formatPeriod(formattedDate),
+                type: 'MEDICAO',
+                totalLaborValue: laborValue,
+                totalMaterialValue: materialValue,
+                totalValue: totalValue,
+                retentionValue: retentionValue,
+                liquidValue: liquidValue,
+                description: measurement.description || measurement.note || `Medição ${measurement.measurementNumber || index + 1}`,
+                createdAt: measurement.createdAt || measurementDate,
+                updatedAt: measurement.updatedAt || measurementDate,
+                // Campos originais da API
+                originalData: measurement,
+                // Flag para indicar se tem contrato válido
+                hasValidContract: !!contract
+            };
+        });
+        
+        // Filtrar apenas medições com contratos válidos OU que tenham dados mínimos
+        const validMeasurements = processedMeasurements.filter(m => 
+            m.hasValidContract || 
+            (m.companyName !== 'Empresa não identificada' && m.supplierName !== 'Fornecedor não identificado')
+        );
+        
+        console.log(`📊 Medições válidas: ${validMeasurements.length} de ${processedMeasurements.length}`);
+        
+        // Se não há medições válidas da API, usar dados simulados
+        if (validMeasurements.length === 0) {
+            console.log('⚠️ Nenhuma medição válida encontrada, gerando dados simulados...');
+            return [];
+        }
+        
+        return validMeasurements;
+    }
+
+    generateMeasurementsFromContracts() {
+        console.log('🎲 Gerando dados simulados baseados nos contratos...');
+        this.allMeasurements = [];
+        let measurementId = 1;
+        
+        // Pegar apenas contratos que têm valor medido > 0
+        const contractsWithMeasurements = this.allContracts.filter(contract => 
+            contract.valorMedido && contract.valorMedido > 0
+        );
+        
+        console.log(`📊 Contratos com medições: ${contractsWithMeasurements.length}`);
+        
+        // Se não há contratos com medições, criar algumas medições de exemplo
+        if (contractsWithMeasurements.length === 0) {
+            console.log('⚠️ Nenhum contrato com medições, criando dados de exemplo...');
+            
+            // Pegar os primeiros 3 contratos para criar medições de exemplo
+            const sampleContracts = this.allContracts.slice(0, 3);
+            
+            sampleContracts.forEach((contract, contractIndex) => {
+                const numMeasurements = 3 + contractIndex; // 3, 4, 5 medições
+                const totalContractValue = parseFloat(contract.valorTotal) || 100000;
+                
+                for (let i = 0; i < numMeasurements; i++) {
+                    const measurementDate = new Date();
+                    measurementDate.setMonth(measurementDate.getMonth() - (numMeasurements - i - 1));
+                    measurementDate.setDate(Math.floor(Math.random() * 28) + 1);
+                    
+                    const laborValue = (totalContractValue / numMeasurements) * 0.6 * (0.8 + Math.random() * 0.4);
+                    const materialValue = (totalContractValue / numMeasurements) * 0.4 * (0.8 + Math.random() * 0.4);
+                    const totalValue = laborValue + materialValue;
+                    
+                    // Calculate retention (5% of total value)
+                    const retentionValue = totalValue * 0.05;
+                    const liquidValue = totalValue - retentionValue;
+                    
+                    this.allMeasurements.push({
+                        id: measurementId++,
+                        measurementNumber: String(i + 1).padStart(3, '0'),
+                        contractId: contract.id,
+                        contractNumber: contract.contractNumber,
+                        companyName: contract.companyName,
+                        supplierName: contract.supplierName,
+                        measurementDate: measurementDate.toISOString().split('T')[0],
+                        period: this.formatPeriod(measurementDate),
+                        type: 'MEDICAO',
+                        totalLaborValue: laborValue,
+                        totalMaterialValue: materialValue,
+                        totalValue: totalValue,
+                        retentionValue: retentionValue,
+                        liquidValue: liquidValue,
+                        description: `Medição ${i + 1} do contrato ${contract.contractNumber}`,
+                        createdAt: measurementDate.toISOString(),
+                        updatedAt: measurementDate.toISOString(),
+                        hasValidContract: true
+                    });
+                }
+            });
+        } else {
+            // Generate measurements for contracts that have measured values
+            contractsWithMeasurements.forEach(contract => {
+                const numMeasurements = Math.floor(Math.random() * 8) + 5; // 5-12 measurements per contract
+                
+                for (let i = 0; i < numMeasurements; i++) {
+                    const measurementDate = new Date();
+                    measurementDate.setMonth(measurementDate.getMonth() - (numMeasurements - i - 1));
+                    measurementDate.setDate(Math.floor(Math.random() * 28) + 1);
+                    
+                    const laborValue = (contract.valorMedido / numMeasurements) * (0.5 + Math.random() * 0.5);
+                    const materialValue = (contract.valorMedido / numMeasurements) * (0.3 + Math.random() * 0.4);
+                    const totalValue = laborValue + materialValue;
+                    
+                    // Calculate retention (5% of total value)
+                    const retentionValue = totalValue * 0.05;
+                    const liquidValue = totalValue - retentionValue;
+                    
+                    this.allMeasurements.push({
+                        id: measurementId++,
+                        measurementNumber: String(i + 1).padStart(3, '0'),
+                        contractId: contract.id,
+                        contractNumber: contract.contractNumber,
+                        companyName: contract.companyName,
+                        supplierName: contract.supplierName,
+                        measurementDate: measurementDate.toISOString().split('T')[0],
+                        period: this.formatPeriod(measurementDate),
+                        type: 'MEDICAO',
+                        totalLaborValue: laborValue,
+                        totalMaterialValue: materialValue,
+                        totalValue: totalValue,
+                        retentionValue: retentionValue,
+                        liquidValue: liquidValue,
+                        description: `Medição ${i + 1} do contrato ${contract.contractNumber}`,
+                        createdAt: measurementDate.toISOString(),
+                        updatedAt: measurementDate.toISOString(),
+                        hasValidContract: true
+                    });
+                }
+            });
+        }
+        
+        // Sort by measurement date (newest first)
+        this.allMeasurements.sort((a, b) => new Date(b.measurementDate) - new Date(a.measurementDate));
+        
+        console.log(`✅ Medições simuladas criadas: ${this.allMeasurements.length}`);
+    }
             );
             
             // Formatar data da medição
