@@ -8,6 +8,7 @@ class MeasurementsPortal {
         this.filtersCollapsed = false;
         this.currentMeasurement = null;
         this.editingMeasurement = null;
+        this.currentContractHistory = null;
         
         this.initializeElements();
         this.bindEvents();
@@ -47,11 +48,14 @@ class MeasurementsPortal {
         // Modal elements
         this.measurementModal = document.getElementById("measurementModal");
         this.measurementDetailsModal = document.getElementById("measurementDetailsModal");
+        this.contractHistoryModal = document.getElementById("contractHistoryModal");
         this.closeMeasurementModal = document.getElementById("closeMeasurementModal");
         this.closeMeasurementDetailsModal = document.getElementById("closeMeasurementDetailsModal");
+        this.closeContractHistoryModal = document.getElementById("closeContractHistoryModal");
         this.modalTitle = document.getElementById("modalTitle");
         this.measurementForm = document.getElementById("measurementForm");
         this.measurementDetailsContent = document.getElementById("measurementDetailsContent");
+        this.contractHistoryContent = document.getElementById("contractHistoryContent");
         
         // Form elements
         this.modalContractSelect = document.getElementById("modalContractSelect");
@@ -98,11 +102,15 @@ class MeasurementsPortal {
         // Modal events
         this.closeMeasurementModal.addEventListener('click', () => this.closeModal());
         this.closeMeasurementDetailsModal.addEventListener('click', () => this.closeDetailsModal());
+        this.closeContractHistoryModal.addEventListener('click', () => this.closeHistoryModal());
         this.measurementModal.addEventListener('click', (e) => {
             if (e.target === this.measurementModal) this.closeModal();
         });
         this.measurementDetailsModal.addEventListener('click', (e) => {
             if (e.target === this.measurementDetailsModal) this.closeDetailsModal();
+        });
+        this.contractHistoryModal.addEventListener('click', (e) => {
+            if (e.target === this.contractHistoryModal) this.closeHistoryModal();
         });
         
         // Form events
@@ -119,6 +127,9 @@ class MeasurementsPortal {
                 }
                 if (this.measurementDetailsModal.classList.contains('show')) {
                     this.closeDetailsModal();
+                }
+                if (this.contractHistoryModal.classList.contains('show')) {
+                    this.closeHistoryModal();
                 }
             }
         });
@@ -195,11 +206,11 @@ class MeasurementsPortal {
         // Generate measurements for contracts that have measured values
         this.allContracts.forEach(contract => {
             if (contract.valorMedido && contract.valorMedido > 0) {
-                const numMeasurements = Math.floor(Math.random() * 3) + 1; // 1-3 measurements per contract
+                const numMeasurements = Math.floor(Math.random() * 6) + 3; // 3-8 measurements per contract for better history
                 
                 for (let i = 0; i < numMeasurements; i++) {
                     const measurementDate = new Date();
-                    measurementDate.setDate(measurementDate.getDate() - Math.floor(Math.random() * 90)); // Last 90 days
+                    measurementDate.setDate(measurementDate.getDate() - (i * 30) - Math.floor(Math.random() * 30)); // Spread over months
                     
                     const periodFrom = new Date(measurementDate);
                     periodFrom.setDate(periodFrom.getDate() - 30);
@@ -208,12 +219,18 @@ class MeasurementsPortal {
                     
                     const laborValue = (contract.valorMedido / numMeasurements) * 0.6; // 60% labor
                     const materialValue = (contract.valorMedido / numMeasurements) * 0.4; // 40% material
+                    const totalValue = laborValue + materialValue;
+                    
+                    // Calculate retention (5% of total value)
+                    const retentionValue = totalValue * 0.05;
+                    const liquidValue = totalValue - retentionValue;
                     
                     const statuses = ['PENDING', 'APPROVED', 'REJECTED', 'DRAFT'];
                     const status = statuses[Math.floor(Math.random() * statuses.length)];
                     
                     this.allMeasurements.push({
                         id: measurementId++,
+                        measurementNumber: String(i + 1).padStart(3, '0'),
                         contractId: contract.id,
                         contractNumber: contract.contractNumber,
                         companyName: contract.companyName,
@@ -221,9 +238,13 @@ class MeasurementsPortal {
                         measurementDate: measurementDate.toISOString().split('T')[0],
                         periodFrom: periodFrom.toISOString().split('T')[0],
                         periodTo: periodTo.toISOString().split('T')[0],
+                        period: this.formatPeriod(periodFrom, periodTo),
+                        type: 'MEDICAO',
                         totalLaborValue: laborValue,
                         totalMaterialValue: materialValue,
-                        totalValue: laborValue + materialValue,
+                        totalValue: totalValue,
+                        retentionValue: retentionValue,
+                        liquidValue: liquidValue,
                         status: status,
                         description: `Medição ${i + 1} do contrato ${contract.contractNumber}`,
                         createdAt: measurementDate.toISOString(),
@@ -235,6 +256,18 @@ class MeasurementsPortal {
         
         // Sort by measurement date (newest first)
         this.allMeasurements.sort((a, b) => new Date(b.measurementDate) - new Date(a.measurementDate));
+    }
+
+    formatPeriod(fromDate, toDate) {
+        const months = [
+            'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+            'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+        ];
+        
+        const month = months[fromDate.getMonth()];
+        const year = fromDate.getFullYear();
+        
+        return `${month} de ${year}`;
     }
 
     populateFilters() {
@@ -397,6 +430,9 @@ class MeasurementsPortal {
                     <button class="btn-action btn-view" onclick="measurementsPortal.viewMeasurement(${measurement.id})" title="Ver detalhes">
                         <i class="fas fa-eye"></i>
                     </button>
+                    <button class="btn-action btn-history" onclick="measurementsPortal.viewContractHistory('${measurement.contractNumber}')" title="Histórico do contrato">
+                        <i class="fas fa-history"></i>
+                    </button>
                     <button class="btn-action btn-edit" onclick="measurementsPortal.editMeasurement(${measurement.id})" title="Editar">
                         <i class="fas fa-edit"></i>
                     </button>
@@ -545,6 +581,112 @@ class MeasurementsPortal {
         this.renderMeasurementDetails(measurement);
         this.measurementDetailsModal.classList.add('show');
         document.body.style.overflow = 'hidden';
+    }
+
+    viewContractHistory(contractNumber) {
+        const contract = this.allContracts.find(c => c.contractNumber === contractNumber);
+        if (!contract) return;
+        
+        this.currentContractHistory = contract;
+        this.renderContractHistory(contractNumber);
+        this.contractHistoryModal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+
+    renderContractHistory(contractNumber) {
+        const contractMeasurements = this.allMeasurements
+            .filter(m => m.contractNumber === contractNumber)
+            .sort((a, b) => new Date(a.measurementDate) - new Date(b.measurementDate));
+        
+        const contract = this.allContracts.find(c => c.contractNumber === contractNumber);
+        
+        let cumulativeValue = 0;
+        let cumulativeRetention = 0;
+        let cumulativeLiquid = 0;
+        
+        this.contractHistoryContent.innerHTML = `
+            <div class="history-header">
+                <h4><i class="fas fa-file-contract"></i> ${contract.object || 'Contrato ' + contractNumber}</h4>
+                <div class="contract-summary">
+                    <div class="summary-item">
+                        <strong>Contrato:</strong> ${contractNumber}
+                    </div>
+                    <div class="summary-item">
+                        <strong>Empresa:</strong> ${contract.companyName}
+                    </div>
+                    <div class="summary-item">
+                        <strong>Fornecedor:</strong> ${contract.supplierName}
+                    </div>
+                    <div class="summary-item">
+                        <strong>Valor Total:</strong> ${(parseFloat(contract.valorTotal) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="history-table-container">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Nº Medição</th>
+                            <th>Período</th>
+                            <th>Tipo</th>
+                            <th>Valor</th>
+                            <th>Mão de Obra</th>
+                            <th>Material</th>
+                            <th>Caução</th>
+                            <th>Valor Líquido</th>
+                            <th>Acumulado</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${contractMeasurements.map(measurement => {
+                            cumulativeValue += parseFloat(measurement.totalValue) || 0;
+                            cumulativeRetention += parseFloat(measurement.retentionValue) || 0;
+                            cumulativeLiquid += parseFloat(measurement.liquidValue) || 0;
+                            
+                            return `
+                                <tr>
+                                    <td>${new Date(measurement.measurementDate).toLocaleDateString('pt-BR')}</td>
+                                    <td>${measurement.measurementNumber}</td>
+                                    <td>${measurement.period || '-'}</td>
+                                    <td><span class="measurement-type">${measurement.type}</span></td>
+                                    <td class="value-cell">${(parseFloat(measurement.totalValue) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</td>
+                                    <td class="value-cell">${(parseFloat(measurement.totalLaborValue) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</td>
+                                    <td class="value-cell">${(parseFloat(measurement.totalMaterialValue) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</td>
+                                    <td class="value-cell retention">${(parseFloat(measurement.retentionValue) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</td>
+                                    <td class="value-cell liquid">${(parseFloat(measurement.liquidValue) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</td>
+                                    <td class="value-cell cumulative">${cumulativeLiquid.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</td>
+                                    <td><span class="measurement-status ${measurement.status}">${this.getStatusText(measurement.status)}</span></td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="history-summary">
+                <div class="summary-totals">
+                    <div class="total-item">
+                        <strong>Total Medido:</strong>
+                        <span class="total-value">${cumulativeValue.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</span>
+                    </div>
+                    <div class="total-item">
+                        <strong>Total Caução:</strong>
+                        <span class="total-retention">${cumulativeRetention.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</span>
+                    </div>
+                    <div class="total-item">
+                        <strong>Total Líquido:</strong>
+                        <span class="total-liquid">${cumulativeLiquid.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</span>
+                    </div>
+                    <div class="total-item">
+                        <strong>Saldo Restante:</strong>
+                        <span class="total-balance">${((parseFloat(contract.valorTotal) || 0) - cumulativeValue).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</span>
+                    </div>
+                </div>
+            </div>
+        `;
     }
 
     deleteMeasurement(id) {
@@ -739,6 +881,12 @@ class MeasurementsPortal {
     closeDetailsModal() {
         this.measurementDetailsModal.classList.remove('show');
         document.body.style.overflow = '';
+    }
+
+    closeHistoryModal() {
+        this.contractHistoryModal.classList.remove('show');
+        document.body.style.overflow = '';
+        this.currentContractHistory = null;
     }
 
     exportToCSV() {
