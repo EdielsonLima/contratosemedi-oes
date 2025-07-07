@@ -299,6 +299,15 @@ class MeasurementsPortal {
         // Initialize other filters as empty (will be populated by cascade)
         this.clearFilterOptions(this.supplierFilter);
         this.clearFilterOptions(this.contractFilter);
+        
+        // Populate initial contract filter with all contracts that have measurements
+        const allContractsWithMeasurements = [...new Set(this.allMeasurements.map(m => m.contractNumber))].sort();
+        allContractsWithMeasurements.forEach(contractNumber => {
+            const option = document.createElement("option");
+            option.value = contractNumber;
+            option.textContent = `Contrato ${contractNumber}`;
+            this.contractFilter.appendChild(option);
+        });
     }
 
     clearFilterOptions(selectElement) {
