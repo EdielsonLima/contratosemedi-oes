@@ -124,9 +124,10 @@ app.get('/api/contracts', async (req, res) => {
 // Rota para buscar anexos de um contrato
 app.get('/api/contracts/:contractNumber/attachments', async (req, res) => {
     try {
+        const { contractNumber } = req.params;
         console.log(`🔍 Buscando anexos para contrato: ${contractNumber}`);
         
-        const attachments = AttachmentDB.getByContract(contractNumber);
+        const attachments = await AttachmentDB.getByContract(contractNumber);
         
         res.json(attachments);
     } catch (error) {
@@ -149,7 +150,7 @@ app.post('/api/contracts/:contractNumber/attachments', async (req, res) => {
         }
         
         // Salvar no banco de dados SQLite
-        const attachment = AttachmentDB.insert(contractNumber, fileName, fileData, fileSize);
+        const attachment = await AttachmentDB.insert(contractNumber, fileName, fileData, fileSize);
         
         res.json({ 
             id: attachment.id,
@@ -168,7 +169,7 @@ app.get('/api/attachments/:id/download', async (req, res) => {
         const attachmentId = parseInt(req.params.id);
         console.log(`📥 Download solicitado para anexo ID: ${attachmentId}`);
         
-        const attachment = AttachmentDB.getById(attachmentId);
+        const attachment = await AttachmentDB.getById(attachmentId);
         
         if (!attachment) {
             console.log(`❌ Anexo não encontrado: ID ${attachmentId}`);
@@ -196,7 +197,7 @@ app.delete('/api/attachments/:id', async (req, res) => {
         const attachmentId = parseInt(req.params.id);
         console.log(`🗑️ Solicitação de exclusão para anexo ID: ${attachmentId}`);
         
-        const success = AttachmentDB.deleteById(attachmentId);
+        const success = await AttachmentDB.deleteById(attachmentId);
         
         if (success) {
             res.json({ message: 'Anexo excluído com sucesso' });
@@ -441,7 +442,7 @@ async function addAttachmentCounts(contracts) {
     console.log(`📊 Calculando contadores de anexos para ${contracts.length} contratos`);
     
     // Obter contadores do banco de dados
-    const attachmentCounts = AttachmentDB.getAttachmentCounts();
+    const attachmentCounts = await AttachmentDB.getAttachmentCounts();
     
     return contracts.map(contract => {
         const count = attachmentCounts[contract.contractNumber] || 0;
