@@ -37,9 +37,21 @@ class ContractPortal {
         this.exportButton = document.getElementById("exportBtn");
         this.toggleFiltersButton = document.getElementById("toggleFilters");
         
+        // Modal elements
+        this.attachmentModal = document.getElementById("attachmentModal");
+        this.closeAttachmentModal = document.getElementById("closeAttachmentModal");
+        this.modalContractNumber = document.getElementById("modalContractNumber");
+        this.modalContractDetails = document.getElementById("modalContractDetails");
+        this.uploadArea = document.getElementById("uploadArea");
+        this.fileInput = document.getElementById("fileInput");
+        this.attachmentsList = document.getElementById("attachmentsList");
+        
         // Other elements
         this.loadingOverlay = document.getElementById("loadingOverlay");
         this.toastContainer = document.getElementById("toastContainer");
+        
+        // Current contract for modal
+        this.currentContract = null;
     }
 
     bindEvents() {
@@ -59,6 +71,25 @@ class ContractPortal {
         // Table sorting events
         document.querySelectorAll('th[data-sort]').forEach(th => {
             th.addEventListener('click', () => this.sortTable(th.dataset.sort));
+        });
+        
+        // Modal events
+        this.closeAttachmentModal.addEventListener('click', () => this.closeModal());
+        this.attachmentModal.addEventListener('click', (e) => {
+            if (e.target === this.attachmentModal) this.closeModal();
+        });
+        
+        // Upload events
+        this.uploadArea.addEventListener('click', () => this.fileInput.click());
+        this.uploadArea.addEventListener('dragover', (e) => this.handleDragOver(e));
+        this.uploadArea.addEventListener('drop', (e) => this.handleDrop(e));
+        this.fileInput.addEventListener('change', (e) => this.handleFileSelect(e));
+        
+        // ESC key to close modal
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && this.attachmentModal.classList.contains('show')) {
+                this.closeModal();
+            }
         });
     }
 
@@ -106,7 +137,7 @@ class ContractPortal {
             console.error("Erro ao buscar contratos:", error);
             this.showToast(`Erro ao carregar dados: ${error.message}`, 'error');
             this.contractsTableBody.innerHTML = `
-                <tr><td colspan="11" class="text-center">
+                <tr><td colspan="12" class="text-center">
                     <i class="fas fa-exclamation-triangle"></i> 
                     Erro ao carregar dados: ${error.message}
                 </td></tr>
@@ -294,7 +325,7 @@ class ContractPortal {
         
         if (this.filteredContracts.length === 0) {
             this.contractsTableBody.innerHTML = `
-                <tr><td colspan="9" class="text-center">
+                <tr><td colspan="12" class="text-center">
                     <i class="fas fa-search"></i> 
                     Nenhum contrato encontrado com os filtros aplicados.
                 </td></tr>
@@ -317,6 +348,16 @@ class ContractPortal {
             const startDateCell = row.insertCell();
             const startDate = new Date(contract.startDate);
             startDateCell.textContent = startDate.toLocaleDateString('pt-BR');
+            
+            // Attachments column
+            const attachmentsCell = row.insertCell();
+            const attachmentCount = contract.attachments ? contract.attachments.length : 0;
+            attachmentsCell.innerHTML = `
+                <button class="btn-attachment" onclick="contractPortal.openAttachmentModal('${contract.contractNumber}')" title="Gerenciar anexos">
+                    <i class="fas fa-paperclip"></i>
+                    ${attachmentCount > 0 ? `<span class="attachment-count">${attachmentCount}</span>` : ''}
+                </button>
+            `;
             
             // Days to expiration with enhanced styling and icons
             const daysToExpiration = this.getDaysToExpiration(contract.endDate);
@@ -379,6 +420,192 @@ class ContractPortal {
         });
 
         this.tableInfo.textContent = `Mostrando ${this.filteredContracts.length} contratos`;
+    }
+
+    openAttachmentModal(contractNumber) {
+        this.currentContract = this.allContracts.find(c => c.contractNumber === contractNumber);
+        if (!this.currentContract) return;
+        
+        this.modalContractNumber.textContent = `Contrato: ${this.currentContract.contractNumber}`;
+        this.modalContractDetails.textContent = `${this.currentContract.companyName} - ${this.currentContract.supplierName}`;
+        
+        this.loadAttachments();
+        this.attachmentModal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+    
+    closeModal() {
+        this.attachmentModal.classList.remove('show');
+        document.body.style.overflow = '';
+        this.currentContract = null;
+    }
+    
+    async loadAttachments() {
+        try {
+            const response = await fetch(`/api/contracts/${this.currentContract.contractNumber}/attachments`);
+            const attachments = response.ok ? await response.json() : [];
+            
+            this.renderAttachments(attachments);
+        } catch (error) {
+            console.error('Erro ao carregar anexos:', error);
+            this.renderAttachments([]);
+        }
+    }
+    
+    renderAttachments(attachments) {
+        if (attachments.length === 0) {
+            this.attachmentsList.innerHTML = `
+                <div class="no-attachments">
+                    <i class="fas fa-folder-open"></i>
+                    <p>Nenhum arquivo anexado ainda</p>
+                </div>
+            `;
+            return;
+        }
+        
+        this.attachmentsList.innerHTML = attachments.map(attachment => `
+            <div class="attachment-item">
+                <div class="attachment-info">
+                    <i class="fas fa-file-pdf"></i>
+                    <div class="attachment-details">
+                        <span class="attachment-name">${attachment.fileName}</span>
+                        <small class="attachment-date">Enviado em ${new Date(attachment.uploadDate).toLocaleDateString('pt-BR')}</small>
+                    </div>
+                </div>
+                <div class="attachment-actions">
+                    <button class="btn-download" onclick="contractPortal.downloadAttachment('${attachment.id}')" title="Baixar">
+                        <i class="fas fa-download"></i>
+                    </button>
+                    <button class="btn-delete" onclick="contractPortal.deleteAttachment('${attachment.id}')" title="Excluir">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    handleDragOver(e) {
+        e.preventDefault();
+        this.uploadArea.classList.add('drag-over');
+    }
+    
+    handleDrop(e) {
+        e.preventDefault();
+        this.uploadArea.classList.remove('drag-over');
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            this.processFile(files[0]);
+        }
+    }
+    
+    handleFileSelect(e) {
+        const file = e.target.files[0];
+        if (file) {
+            this.processFile(file);
+        }
+    }
+    
+    async processFile(file) {
+        // Validações
+        if (file.type !== 'application/pdf') {
+            this.showToast('Apenas arquivos PDF são aceitos!', 'error');
+            return;
+        }
+        
+        if (file.size > 10 * 1024 * 1024) { // 10MB
+            this.showToast('Arquivo muito grande! Máximo 10MB.', 'error');
+            return;
+        }
+        
+        try {
+            this.showLoading();
+            
+            // Converter para Base64
+            const base64 = await this.fileToBase64(file);
+            
+            // Enviar para o servidor
+            const response = await fetch(`/api/contracts/${this.currentContract.contractNumber}/attachments`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    fileName: file.name,
+                    fileData: base64,
+                    fileSize: file.size
+                })
+            });
+            
+            if (response.ok) {
+                this.showToast('Arquivo enviado com sucesso!');
+                this.loadAttachments();
+                this.fileInput.value = '';
+                
+                // Atualizar contador na tabela
+                this.loadContracts();
+            } else {
+                throw new Error('Erro ao enviar arquivo');
+            }
+            
+        } catch (error) {
+            console.error('Erro ao processar arquivo:', error);
+            this.showToast('Erro ao enviar arquivo!', 'error');
+        } finally {
+            this.hideLoading();
+        }
+    }
+    
+    fileToBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result.split(',')[1]);
+            reader.onerror = error => reject(error);
+        });
+    }
+    
+    async downloadAttachment(attachmentId) {
+        try {
+            const response = await fetch(`/api/attachments/${attachmentId}/download`);
+            if (!response.ok) throw new Error('Erro ao baixar arquivo');
+            
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = response.headers.get('Content-Disposition')?.split('filename=')[1] || 'arquivo.pdf';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            
+        } catch (error) {
+            console.error('Erro ao baixar arquivo:', error);
+            this.showToast('Erro ao baixar arquivo!', 'error');
+        }
+    }
+    
+    async deleteAttachment(attachmentId) {
+        if (!confirm('Tem certeza que deseja excluir este anexo?')) return;
+        
+        try {
+            const response = await fetch(`/api/attachments/${attachmentId}`, {
+                method: 'DELETE'
+            });
+            
+            if (response.ok) {
+                this.showToast('Anexo excluído com sucesso!');
+                this.loadAttachments();
+                this.loadContracts(); // Atualizar contador
+            } else {
+                throw new Error('Erro ao excluir anexo');
+            }
+            
+        } catch (error) {
+            console.error('Erro ao excluir anexo:', error);
+            this.showToast('Erro ao excluir anexo!', 'error');
+        }
     }
 
     updateStats() {
@@ -542,5 +769,5 @@ class ContractPortal {
 
 // Initialize the application when DOM is loaded
 document.addEventListener("DOMContentLoaded", () => {
-    new ContractPortal();
+    window.contractPortal = new ContractPortal();
 });
