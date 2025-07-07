@@ -19,7 +19,16 @@ app.use(express.static(path.join(__dirname, 'static')));
 const SIENGE_USER = "silvapacker-eddy";
 const SIENGE_PASSWORD = "dzTk2FW210bwhTBMfqNuyJAAifFICYGs";
 const SIENGE_API_URL = "https://api.sienge.com.br/silvapacker/public/api/v1/supply-contracts/all";
-const SIENGE_MEASUREMENTS_API_URL = "https://api.sienge.com.br/silvapacker/public/api/v1/supply-contracts/measurements/all";
+
+// Possíveis endpoints de medições para testar
+const POSSIBLE_MEASUREMENTS_ENDPOINTS = [
+    "https://api.sienge.com.br/silvapacker/public/api/v1/supply-contracts/measurements/all",
+    "https://api.sienge.com.br/silvapacker/public/api/v1/measurements/all",
+    "https://api.sienge.com.br/silvapacker/public/api/v1/supply-contracts/measurements",
+    "https://api.sienge.com.br/silvapacker/public/api/v1/measurements",
+    "https://api.sienge.com.br/silvapacker/public/api/v1/contracts/measurements/all",
+    "https://api.sienge.com.br/silvapacker/public/api/v1/contracts/measurements"
+];
 
 // Rota para buscar contratos
 app.get('/api/contracts', async (req, res) => {
@@ -81,6 +90,18 @@ app.get('/api/contracts', async (req, res) => {
         console.log(`🔍 Debug: Total de contratos: ${allContracts.length}`);
         console.log(`📊 Debug: Total de medições: ${allMeasurements.length}`);
         
+        // Se não conseguiu buscar medições, definir valores padrão
+        if (allMeasurements.length === 0) {
+            console.warn(`⚠️ Como não foram encontradas medições, definindo valores padrão (0) para todas as colunas de medição`);
+            const contractsWithDefaults = allContracts.map(contract => ({
+                ...contract,
+                valorMedido: 0,
+                saldoContrato: contract.valorTotal || 0,
+                numeroMedicoes: 0
+            }));
+            return res.json(contractsWithDefaults);
+        }
+        
         // Calcular valores medidos e saldos para cada contrato
         const contractsWithMeasurements = calculateMeasurementsData(allContracts, allMeasurements);
         
@@ -98,8 +119,66 @@ app.get('/api/contracts', async (req, res) => {
 // Função para buscar todas as medições com paginação
 async function fetchAllMeasurements(headers) {
     const allMeasurements = [];
+    
+    console.log(`🔍 Testando ${POSSIBLE_MEASUREMENTS_ENDPOINTS.length} possíveis endpoints de medições...`);
+    
+    // Testar cada endpoint possível
+    for (let i = 0; i < POSSIBLE_MEASUREMENTS_ENDPOINTS.length; i++) {
+        const testEndpoint = POSSIBLE_MEASUREMENTS_ENDPOINTS[i];
+        console.log(`\n📡 Teste ${i + 1}/${POSSIBLE_MEASUREMENTS_ENDPOINTS.length}: ${testEndpoint}`);
+        
+        try {
+            const params = new URLSearchParams({
+                limit: "10", // Usar limite pequeno para teste
+                offset: "0"
+            });
+            
+            const testUrl = `${testEndpoint}?${params}`;
+            const response = await fetch(testUrl, { headers });
+            
+            console.log(`   Status: ${response.status} ${response.statusText}`);
+            
+            if (response.ok) {
+                const data = await response.json();
+                console.log(`   ✅ SUCESSO! Estrutura da resposta:`, Object.keys(data));
+                
+                if (data.results && Array.isArray(data.results)) {
+                    console.log(`   📊 Encontradas ${data.results.length} medições na primeira página`);
+                    if (data.results.length > 0) {
+                        console.log(`   🔍 Exemplo de medição:`, JSON.stringify(data.results[0], null, 2));
+                    }
+                    
+                    // Endpoint encontrado! Agora buscar todas as medições
+                    console.log(`\n🎯 Endpoint correto encontrado: ${testEndpoint}`);
+                    return await fetchAllMeasurementsFromEndpoint(testEndpoint, headers);
+                }
+            } else {
+                const errorText = await response.text();
+                console.log(`   ❌ Erro: ${errorText.substring(0, 200)}...`);
+            }
+            
+        } catch (error) {
+            console.log(`   💥 Exceção: ${error.message}`);
+        }
+    }
+   
+    console.log(`\n❌ NENHUM endpoint de medições funcionou!`);
+    console.log(`⚠️ Possíveis causas:`);
+    console.log(`   1. Endpoint de medições não existe na API`);
+    console.log(`   2. Credenciais sem permissão para acessar medições`);
+    console.log(`   3. API de medições requer autenticação diferente`);
+    console.log(`   4. Estrutura da URL completamente diferente`);
+    
+    return allMeasurements;
+}
+
+// Função para buscar todas as medições de um endpoint específico
+async function fetchAllMeasurementsFromEndpoint(endpoint, headers) {
+    const allMeasurements = [];
     let offset = 0;
     const limit = 200;
+
+    console.log(`📥 Buscando todas as medições do endpoint: ${endpoint}`);
 
     while (true) {
         const params = new URLSearchParams({
@@ -107,21 +186,19 @@ async function fetchAllMeasurements(headers) {
             offset: offset.toString()
         });
 
-        const url = `${SIENGE_MEASUREMENTS_API_URL}?${params}`;
+        const url = `${endpoint}?${params}`;
 
         try {
             const response = await fetch(url, { headers });
             
             if (!response.ok) {
-               console.warn(`⚠️ Erro ao buscar medições (offset ${offset}):`, response.status, response.statusText);
-               const errorText = await response.text();
-               console.warn(`📄 Resposta do erro:`, errorText);
-               break;
+                console.error(`❌ Erro ${response.status} na página ${Math.floor(offset/limit) + 1}`);
+                break;
             }
 
             const data = await response.json();
-           console.log(`📊 Página ${Math.floor(offset/limit) + 1}: ${measurementsPage.length} medições`);
             const measurementsPage = data.results || [];
+            console.log(`📊 Página ${Math.floor(offset/limit) + 1}: ${measurementsPage.length} medições`);
 
             if (measurementsPage.length === 0) {
                 break;
@@ -131,18 +208,12 @@ async function fetchAllMeasurements(headers) {
             offset += limit;
 
         } catch (fetchError) {
-            console.error('Erro na requisição de medições:', fetchError);
-           console.error('📍 URL tentada:', url);
+            console.error(`💥 Erro na página ${Math.floor(offset/limit) + 1}:`, fetchError.message);
             break;
         }
     }
 
-   console.log(`✅ TOTAL de medições encontradas: ${allMeasurements.length}`);
-   
-   // Debug: mostrar algumas medições de exemplo
-   if (allMeasurements.length > 0) {
-       console.log(`🔍 Exemplo de medição:`, JSON.stringify(allMeasurements[0], null, 2));
-   }
+    console.log(`✅ TOTAL de medições encontradas: ${allMeasurements.length}`);
    
     return allMeasurements;
 }
