@@ -145,6 +145,15 @@ class ContractPortal {
             }
             
             this.allContracts = await response.json();
+            
+            // DEBUG: Mostrar todos os campos do primeiro contrato
+            if (this.allContracts.length > 0) {
+                console.log('🔍 CAMPOS DISPONÍVEIS NO PRIMEIRO CONTRATO:');
+                console.log(Object.keys(this.allContracts[0]));
+                console.log('📋 DADOS COMPLETOS DO PRIMEIRO CONTRATO:');
+                console.log(this.allContracts[0]);
+            }
+            
             this.populateFilters();
             this.applyFilters();
             this.showToast('Contratos carregados com sucesso!');
