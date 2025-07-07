@@ -302,8 +302,8 @@ class MeasurementsPortal {
             this.contractFilter.appendChild(option);
         });
 
-        // Populate company filter
-        const companies = [...new Set(this.allMeasurements.map(m => m.companyName))].sort();
+        // Populate company filter - usar TODOS os contratos, não apenas medições
+        const companies = [...new Set(this.allContracts.map(c => c.companyName))].sort();
         companies.forEach(company => {
             const option = document.createElement("option");
             option.value = company;
@@ -311,8 +311,8 @@ class MeasurementsPortal {
             this.companyFilter.appendChild(option);
         });
 
-        // Populate supplier filter
-        const suppliers = [...new Set(this.allMeasurements.map(m => m.supplierName))].sort();
+        // Populate supplier filter - usar TODOS os contratos, não apenas medições
+        const suppliers = [...new Set(this.allContracts.map(c => c.supplierName))].sort();
         suppliers.forEach(supplier => {
             const option = document.createElement("option");
             option.value = supplier;
