@@ -16,6 +16,7 @@ class ContractPortal {
         this.totalContractsCard = document.getElementById("totalContracts");
         this.totalValueCard = document.getElementById("totalValue");
         this.totalMeasuredCard = document.getElementById("totalMeasured");
+        this.totalCautionCard = document.getElementById("totalCaution");
         this.totalCompaniesCard = document.getElementById("totalCompanies");
         this.totalSuppliersCard = document.getElementById("totalSuppliers");
         this.expiringContractsCard = document.getElementById("expiringContracts");
@@ -507,6 +508,21 @@ class ContractPortal {
                 balanceCell.style.fontWeight = '600';
             }
             
+            // Caução/Retenção
+            const retentionValue = parseFloat(contract.retentionValue) || 0;
+            const retentionCell = row.insertCell();
+            retentionCell.textContent = retentionValue.toLocaleString("pt-BR", { 
+                style: "currency", currency: "BRL" 
+            });
+            
+            // Colorir caução
+            if (retentionValue > 0) {
+                retentionCell.style.color = '#dc3545'; // Vermelho para caução
+                retentionCell.style.fontWeight = '600';
+            } else {
+                retentionCell.style.color = '#6c757d'; // Cinza para sem caução
+            }
+            
             // Status with enhanced styling - MOVIDO PARA O FINAL
             const statusCell = row.insertCell();
             const statusClass = this.getStatusClass(contract.status);
@@ -777,6 +793,12 @@ class ContractPortal {
             style: "currency", currency: "BRL" 
         });
 
+        // Total caution value
+        const totalCaution = contracts.reduce((sum, c) => sum + (parseFloat(c.retentionValue) || 0), 0);
+        this.totalCautionCard.textContent = totalCaution.toLocaleString("pt-BR", { 
+            style: "currency", currency: "BRL" 
+        });
+
         // Unique companies
         const uniqueCompanies = new Set(contracts.map(c => c.companyName));
         this.totalCompaniesCard.textContent = uniqueCompanies.size;
@@ -826,6 +848,9 @@ class ContractPortal {
                 aVal = parseFloat(aVal) || 0;
                 bVal = parseFloat(bVal) || 0;
             } else if (column === 'valorMedido' || column === 'saldoContrato') {
+                aVal = parseFloat(aVal) || 0;
+                bVal = parseFloat(bVal) || 0;
+            } else if (column === 'retentionValue') {
                 aVal = parseFloat(aVal) || 0;
                 bVal = parseFloat(bVal) || 0;
             } else {

@@ -182,6 +182,7 @@ body {
 .card.total-contracts::before { background: var(--primary-color); }
 .card.total-value::before { background: var(--success-color); }
 .card.total-measured::before { background: var(--info-color); }
+.card.total-caution::before { background: var(--danger-color); }
 .card.total-companies::before { background: var(--info-color); }
 .card.total-suppliers::before { background: var(--warning-color); }
 .card.expiring-contracts::before { background: var(--danger-color); }
@@ -206,6 +207,7 @@ body {
 .total-contracts .card-icon { background: var(--primary-color); }
 .total-value .card-icon { background: var(--success-color); }
 .total-measured .card-icon { background: var(--info-color); }
+.total-caution .card-icon { background: var(--danger-color); }
 .total-companies .card-icon { background: var(--info-color); }
 .total-suppliers .card-icon { background: var(--warning-color); }
 .expiring-contracts .card-icon { background: var(--danger-color); }
