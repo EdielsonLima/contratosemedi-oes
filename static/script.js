@@ -318,10 +318,10 @@ class ContractPortal {
             row.insertCell().textContent = contract.companyName;
             row.insertCell().textContent = contract.supplierName;
             
-            // End Date
-            const endDateCell = row.insertCell();
-            const endDate = new Date(contract.endDate);
-            endDateCell.textContent = endDate.toLocaleDateString('pt-BR');
+            // Start Date - NOVA COLUNA
+            const startDateCell = row.insertCell();
+            const startDate = new Date(contract.startDate);
+            startDateCell.textContent = startDate.toLocaleDateString('pt-BR');
             
             // Days to expiration with enhanced styling and icons
             const daysToExpiration = this.getDaysToExpiration(contract.endDate);
@@ -369,12 +369,12 @@ class ContractPortal {
         const uniqueSuppliers = new Set(contracts.map(c => c.supplierName));
         this.totalSuppliersCard.textContent = uniqueSuppliers.size;
 
-        // Expiring contracts - CORRIGIDO: usar todos os contratos, não apenas os filtrados
-        const allExpiringContracts = this.allContracts.filter(contract => {
+        // Expired contracts - CORRIGIDO: contar apenas contratos vencidos (dias negativos)
+        const expiredContracts = this.allContracts.filter(contract => {
             const daysToExpiration = this.getDaysToExpiration(contract.endDate);
-            return daysToExpiration >= 0 && daysToExpiration <= 30;
+            return daysToExpiration < 0; // Apenas contratos vencidos
         });
-        this.expiringContractsCard.textContent = allExpiringContracts.length;
+        this.expiringContractsCard.textContent = expiredContracts.length;
     }
 
     sortTable(column) {
@@ -400,7 +400,7 @@ class ContractPortal {
             let bVal = b[column];
 
             // Handle different data types
-            if (column === 'endDate') {
+            if (column === 'startDate') {
                 aVal = new Date(aVal);
                 bVal = new Date(bVal);
             } else if (column === 'diasVencimento') {
@@ -456,7 +456,7 @@ class ContractPortal {
             'Status',
             'Empresa',
             'Fornecedor',
-            'Vencimento',
+            'Início',
             'Dias',
             'Situação de Vencimento',
             'Valor Mão de Obra',
@@ -467,7 +467,6 @@ class ContractPortal {
         const csvContent = [
             headers.join(','),
             ...this.filteredContracts.map(contract => {
-                const endDate = new Date(contract.endDate);
                 const daysToExpiration = this.getDaysToExpiration(contract.endDate);
                 const expirationDisplay = this.getExpirationDisplay(daysToExpiration);
                 
@@ -476,7 +475,7 @@ class ContractPortal {
                     `"${contract.status}"`,
                     `"${contract.companyName}"`,
                     `"${contract.supplierName}"`,
-                    `"${endDate.toLocaleDateString('pt-BR')}"`,
+                    `"${new Date(contract.startDate).toLocaleDateString('pt-BR')}"`,
                     daysToExpiration,
                     `"${expirationDisplay.text}"`,
                     parseFloat(contract.totalLaborValue) || 0,
