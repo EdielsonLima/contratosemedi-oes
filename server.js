@@ -3,14 +3,55 @@ import cors from 'cors';
 import fetch from 'node-fetch';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fs from 'fs';
 
-// Simulação de banco de dados para anexos
-let attachmentsDB = new Map();
-let attachmentIdCounter = 1;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Caminho para o arquivo de dados dos anexos
+const ATTACHMENTS_FILE = path.join(__dirname, 'attachments.json');
+
+// Carregar anexos do arquivo
+function loadAttachments() {
+    try {
+        if (fs.existsSync(ATTACHMENTS_FILE)) {
+            const data = fs.readFileSync(ATTACHMENTS_FILE, 'utf8');
+            const parsed = JSON.parse(data);
+            return {
+                attachments: new Map(Object.entries(parsed.attachments || {})),
+                counter: parsed.counter || 1
+            };
+        }
+    } catch (error) {
+        console.error('Erro ao carregar anexos:', error);
+    }
+    return {
+        attachments: new Map(),
+        counter: 1
+    };
+}
+
+// Salvar anexos no arquivo
+function saveAttachments() {
+    try {
+        const data = {
+            attachments: Object.fromEntries(attachmentsDB),
+            counter: attachmentIdCounter
+        };
+        fs.writeFileSync(ATTACHMENTS_FILE, JSON.stringify(data, null, 2));
+        console.log('📁 Anexos salvos no arquivo');
+    } catch (error) {
+        console.error('Erro ao salvar anexos:', error);
+    }
+}
+
+// Inicializar dados dos anexos
+const attachmentData = loadAttachments();
+let attachmentsDB = attachmentData.attachments;
+let attachmentIdCounter = attachmentData.counter;
+
+console.log(`📎 Carregados ${attachmentsDB.size} anexos do arquivo`);
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -158,6 +199,7 @@ app.post('/api/contracts/:contractNumber/attachments', async (req, res) => {
         };
         
         attachmentsDB.set(attachment.id, attachment);
+        saveAttachments(); // Salvar no arquivo
         
         console.log(`📎 Anexo salvo: ${fileName} para contrato ${contractNumber}`);
         
@@ -203,6 +245,7 @@ app.delete('/api/attachments/:id', async (req, res) => {
         if (attachmentsDB.has(attachmentId)) {
             const attachment = attachmentsDB.get(attachmentId);
             attachmentsDB.delete(attachmentId);
+            saveAttachments(); // Salvar no arquivo
             console.log(`🗑️ Anexo excluído: ${attachment.fileName}`);
             res.json({ message: 'Anexo excluído com sucesso' });
         } else {
