@@ -452,12 +452,12 @@ class ContractPortal {
         }
 
         const headers = [
-            'Número do Contrato',
+            'Nº Contrato',
             'Status',
             'Empresa',
             'Fornecedor',
-            'Data de Vencimento',
-            'Dias para Vencimento',
+            'Vencimento',
+            'Dias',
             'Situação de Vencimento',
             'Valor Mão de Obra',
             'Valor Material',
