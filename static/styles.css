@@ -10,18 +10,6 @@
     --border-radius: 12px;
     --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     --transition: all 0.3s ease;
-    
-    /* Status Colors - Cores mais distintas e vibrantes */
-    --status-ativo: #28a745;
-    --status-inativo: #dc3545;
-    --status-pendente: #ffc107;
-    --status-aprovado: #20c997;
-    --status-cancelado: #6c757d;
-    --status-suspenso: #fd7e14;
-    --status-renovado: #6f42c1;
-    --status-vencido: #e83e8c;
-    --status-em-andamento: #007bff;
-    --status-finalizado: #343a40;
 }
 
 * {
@@ -526,7 +514,7 @@ table td {
     font-style: italic;
 }
 
-/* Status Colors - CORES DISTINTAS E VIBRANTES */
+/* STATUS COLORS - MAPEAMENTO ESPECÍFICO PARA SUA BASE DE DADOS */
 .status-cell {
     padding: 4px 10px !important;
     border-radius: 15px;
@@ -541,78 +529,74 @@ table td {
     border: 1px solid;
 }
 
-/* Status específicos com cores MUITO distintas */
-.status-ativo,
-.status-active {
-    background: #d4edda;
-    color: #155724;
-    border-color: #c3e6cb;
-}
-
-.status-inativo,
-.status-inactive {
-    background: #f8d7da;
-    color: #721c24;
-    border-color: #f5c6cb;
-}
-
-.status-pendente,
-.status-pending {
-    background: #fff3cd;
-    color: #856404;
-    border-color: #ffeaa7;
-}
-
-.status-aprovado,
-.status-approved {
-    background: #d1ecf1;
-    color: #0c5460;
-    border-color: #bee5eb;
-}
-
-.status-cancelado,
-.status-cancelled,
-.status-canceled {
-    background: #e2e3e5;
-    color: #383d41;
-    border-color: #d6d8db;
-}
-
-.status-suspenso,
-.status-suspended {
-    background: #ffeaa7;
-    color: #b45309;
-    border-color: #fdcb6e;
-}
-
-.status-renovado,
-.status-renewed {
-    background: #e2d9f3;
-    color: #4c2c92;
-    border-color: #d1c4e9;
-}
-
-.status-vencido,
-.status-expired {
-    background: #f8d7da;
-    color: #721c24;
-    border-color: #f5c6cb;
-}
-
-.status-em-andamento,
-.status-in-progress,
-.status-ongoing {
+/* PARTIALLY_MEASURED - Em andamento (Azul) */
+.status-em-andamento {
     background: #cce7ff;
     color: #004085;
     border-color: #b3d7ff;
 }
 
-.status-finalizado,
-.status-finished,
-.status-completed {
+/* FULLY_MEASURED - Aprovado/Medido (Verde claro) */
+.status-aprovado {
+    background: #d1ecf1;
+    color: #0c5460;
+    border-color: #bee5eb;
+}
+
+/* COMPLETED - Finalizado (Cinza escuro) */
+.status-finalizado {
     background: #d6d8db;
     color: #1d2124;
     border-color: #c6c8ca;
+}
+
+/* ACTIVE - Ativo (Verde) */
+.status-ativo {
+    background: #d4edda;
+    color: #155724;
+    border-color: #c3e6cb;
+}
+
+/* INACTIVE - Inativo (Vermelho) */
+.status-inativo {
+    background: #f8d7da;
+    color: #721c24;
+    border-color: #f5c6cb;
+}
+
+/* PENDING - Pendente (Amarelo) */
+.status-pendente {
+    background: #fff3cd;
+    color: #856404;
+    border-color: #ffeaa7;
+}
+
+/* CANCELLED/CANCELED - Cancelado (Cinza) */
+.status-cancelado {
+    background: #e2e3e5;
+    color: #383d41;
+    border-color: #d6d8db;
+}
+
+/* SUSPENDED - Suspenso (Laranja) */
+.status-suspenso {
+    background: #ffeaa7;
+    color: #b45309;
+    border-color: #fdcb6e;
+}
+
+/* RENEWED - Renovado (Roxo) */
+.status-renovado {
+    background: #e2d9f3;
+    color: #4c2c92;
+    border-color: #d1c4e9;
+}
+
+/* EXPIRED - Vencido (Vermelho escuro) */
+.status-vencido {
+    background: #f8d7da;
+    color: #721c24;
+    border-color: #f5c6cb;
 }
 
 /* Status genérico para casos não mapeados */

@@ -216,49 +216,40 @@ class ContractPortal {
         this.updateStats();
     }
 
-    // Função para normalizar status e aplicar classe CSS
+    // Função para mapear status específicos da sua base de dados
     getStatusClass(status) {
         if (!status) return 'status-default';
         
+        // Mapeamento direto dos status que aparecem na sua base
+        const statusMap = {
+            'PARTIALLY_MEASURED': 'status-em-andamento',
+            'FULLY_MEASURED': 'status-aprovado', 
+            'COMPLETED': 'status-finalizado',
+            'ACTIVE': 'status-ativo',
+            'INACTIVE': 'status-inativo',
+            'PENDING': 'status-pendente',
+            'CANCELLED': 'status-cancelado',
+            'CANCELED': 'status-cancelado',
+            'SUSPENDED': 'status-suspenso',
+            'RENEWED': 'status-renovado',
+            'EXPIRED': 'status-vencido'
+        };
+        
+        // Primeiro tenta o mapeamento direto
+        if (statusMap[status]) {
+            return statusMap[status];
+        }
+        
+        // Se não encontrar, normaliza e tenta novamente
         const normalizedStatus = status.toLowerCase()
-            .replace(/\s+/g, '-')
+            .replace(/\s+/g, '_')
             .replace(/[áàâã]/g, 'a')
             .replace(/[éèê]/g, 'e')
             .replace(/[íìî]/g, 'i')
             .replace(/[óòôõ]/g, 'o')
             .replace(/[úùû]/g, 'u')
-            .replace(/[ç]/g, 'c');
-        
-        // Mapeamento de status para classes CSS
-        const statusMap = {
-            'ativo': 'status-ativo',
-            'active': 'status-ativo',
-            'inativo': 'status-inativo',
-            'inactive': 'status-inativo',
-            'pendente': 'status-pendente',
-            'pending': 'status-pendente',
-            'aprovado': 'status-aprovado',
-            'approved': 'status-aprovado',
-            'cancelado': 'status-cancelado',
-            'cancelled': 'status-cancelado',
-            'canceled': 'status-cancelado',
-            'suspenso': 'status-suspenso',
-            'suspended': 'status-suspenso',
-            'renovado': 'status-renovado',
-            'renewed': 'status-renovado',
-            'vencido': 'status-vencido',
-            'expired': 'status-vencido',
-            'em-andamento': 'status-em-andamento',
-            'in-progress': 'status-em-andamento',
-            'ongoing': 'status-em-andamento',
-            'finalizado': 'status-finalizado',
-            'finished': 'status-finalizado',
-            'completed': 'status-finalizado',
-            // Adicionando mapeamentos específicos para os status que aparecem na sua base
-            'partially-measured': 'status-em-andamento',
-            'fully-measured': 'status-aprovado',
-            'measured': 'status-aprovado'
-        };
+            .replace(/[ç]/g, 'c')
+            .toUpperCase();
         
         return statusMap[normalizedStatus] || 'status-default';
     }
@@ -318,7 +309,7 @@ class ContractPortal {
             // Contract Number
             row.insertCell().textContent = contract.contractNumber;
             
-            // Status with enhanced styling
+            // Status with enhanced styling - CORRIGIDO
             const statusCell = row.insertCell();
             const statusClass = this.getStatusClass(contract.status);
             statusCell.innerHTML = `<span class="status-cell ${statusClass}">${contract.status}</span>`;
