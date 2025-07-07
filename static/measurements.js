@@ -165,15 +165,8 @@ class MeasurementsPortal {
             }
             this.allContracts = await contractsResponse.json();
             
-            // Load real measurements from API
-            const measurementsResponse = await fetch("/api/measurements");
-            if (!measurementsResponse.ok) {
-                throw new Error(`HTTP error! status: ${measurementsResponse.status}`);
-            }
-            this.allMeasurements = await measurementsResponse.json();
-            
-            // Enrich measurements with contract data
-            this.enrichMeasurementsWithContractData();
+            // Generate mock measurements data based on contracts
+            this.generateMockMeasurements();
             
             this.populateFilters();
             this.populateContractSelect();
@@ -195,80 +188,53 @@ class MeasurementsPortal {
         }
     }
 
-    enrichMeasurementsWithContractData() {
-        console.log(`🔍 Enriquecendo ${this.allMeasurements.length} medições com dados dos contratos...`);
+    generateMockMeasurements() {
+        this.allMeasurements = [];
+        let measurementId = 1;
         
-        // Create a map of contracts for quick lookup
-        const contractsMap = new Map();
+        // Generate measurements for contracts that have measured values
         this.allContracts.forEach(contract => {
-            contractsMap.set(contract.id, contract);
-            contractsMap.set(contract.contractNumber, contract);
-        });
-        
-        // Enrich measurements with contract data
-        this.allMeasurements = this.allMeasurements.map(measurement => {
-            // Try to find contract by different possible keys
-            let contract = null;
-            
-            // Try by contractId first
-            if (measurement.contractId) {
-                contract = contractsMap.get(measurement.contractId);
-            }
-            
-            // Try by supplyContractId
-            if (!contract && measurement.supplyContractId) {
-                contract = contractsMap.get(measurement.supplyContractId);
-            }
-            
-            // Try by contractNumber
-            if (!contract && measurement.contractNumber) {
-                contract = contractsMap.get(measurement.contractNumber);
-            }
-            
-            // If found contract, add company and supplier info
-            if (contract) {
-                return {
-                    ...measurement,
-                    contractNumber: contract.contractNumber,
-                    companyName: contract.companyName,
-                    supplierName: contract.supplierName,
-                    // Ensure we have proper date formatting
-                    measurementDate: measurement.measurementDate || measurement.createdAt || new Date().toISOString().split('T')[0],
-                    periodFrom: measurement.periodFrom || measurement.startDate || '',
-                    periodTo: measurement.periodTo || measurement.endDate || '',
-                    // Calculate total value if not present
-                    totalValue: measurement.totalValue || 
-                               (parseFloat(measurement.totalLaborValue || 0) + parseFloat(measurement.totalMaterialValue || 0)),
-                    // Ensure status is present
-                    status: measurement.status || 'PENDING',
-                    // Add description if not present
-                    description: measurement.description || measurement.notes || `Medição do contrato ${contract.contractNumber}`
-                };
-            } else {
-                console.warn(`⚠️ Contrato não encontrado para medição:`, measurement);
-                return {
-                    ...measurement,
-                    companyName: 'N/A',
-                    supplierName: 'N/A',
-                    measurementDate: measurement.measurementDate || measurement.createdAt || new Date().toISOString().split('T')[0],
-                    periodFrom: measurement.periodFrom || '',
-                    periodTo: measurement.periodTo || '',
-                    totalValue: measurement.totalValue || 
-                               (parseFloat(measurement.totalLaborValue || 0) + parseFloat(measurement.totalMaterialValue || 0)),
-                    status: measurement.status || 'PENDING',
-                    description: measurement.description || 'Medição sem contrato associado'
-                };
+            if (contract.valorMedido && contract.valorMedido > 0) {
+                const numMeasurements = Math.floor(Math.random() * 3) + 1; // 1-3 measurements per contract
+                
+                for (let i = 0; i < numMeasurements; i++) {
+                    const measurementDate = new Date();
+                    measurementDate.setDate(measurementDate.getDate() - Math.floor(Math.random() * 90)); // Last 90 days
+                    
+                    const periodFrom = new Date(measurementDate);
+                    periodFrom.setDate(periodFrom.getDate() - 30);
+                    
+                    const periodTo = new Date(measurementDate);
+                    
+                    const laborValue = (contract.valorMedido / numMeasurements) * 0.6; // 60% labor
+                    const materialValue = (contract.valorMedido / numMeasurements) * 0.4; // 40% material
+                    
+                    const statuses = ['PENDING', 'APPROVED', 'REJECTED', 'DRAFT'];
+                    const status = statuses[Math.floor(Math.random() * statuses.length)];
+                    
+                    this.allMeasurements.push({
+                        id: measurementId++,
+                        contractId: contract.id,
+                        contractNumber: contract.contractNumber,
+                        companyName: contract.companyName,
+                        supplierName: contract.supplierName,
+                        measurementDate: measurementDate.toISOString().split('T')[0],
+                        periodFrom: periodFrom.toISOString().split('T')[0],
+                        periodTo: periodTo.toISOString().split('T')[0],
+                        totalLaborValue: laborValue,
+                        totalMaterialValue: materialValue,
+                        totalValue: laborValue + materialValue,
+                        status: status,
+                        description: `Medição ${i + 1} do contrato ${contract.contractNumber}`,
+                        createdAt: measurementDate.toISOString(),
+                        updatedAt: measurementDate.toISOString()
+                    });
+                }
             }
         });
         
         // Sort by measurement date (newest first)
-        this.allMeasurements.sort((a, b) => {
-            const dateA = new Date(a.measurementDate);
-            const dateB = new Date(b.measurementDate);
-            return dateB - dateA;
-        });
-        
-        console.log(`✅ Medições enriquecidas: ${this.allMeasurements.length}`);
+        this.allMeasurements.sort((a, b) => new Date(b.measurementDate) - new Date(a.measurementDate));
     }
 
     populateFilters() {
