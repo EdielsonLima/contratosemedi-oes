@@ -403,7 +403,7 @@ class ContractPortal {
         
         if (this.filteredContracts.length === 0) {
             this.contractsTableBody.innerHTML = `
-                <tr><td colspan="13" class="text-center">
+                <tr><td colspan="12" class="text-center">
                     <i class="fas fa-search"></i> 
                     Nenhum contrato encontrado com os filtros aplicados.
                 </td></tr>
@@ -502,21 +502,6 @@ class ContractPortal {
             } else {
                 balanceCell.style.color = '#28a745'; // Verde para saldo positivo
                 balanceCell.style.fontWeight = '600';
-            }
-            
-            // Caução/Retenção - NOVA COLUNA
-            const retentionValue = parseFloat(contract.retentionValue || contract.caucao || contract.retencao || contract.retention || 0);
-            const retentionCell = row.insertCell();
-            retentionCell.textContent = retentionValue.toLocaleString("pt-BR", { 
-                style: "currency", currency: "BRL" 
-            });
-            
-            // Colorir retenção baseado no valor
-            if (retentionValue > 0) {
-                retentionCell.style.color = '#dc3545'; // Vermelho para retenção positiva
-                retentionCell.style.fontWeight = '600';
-            } else {
-                retentionCell.style.color = '#6c757d'; // Cinza para sem retenção
             }
             
             // Status with enhanced styling - MOVIDO PARA O FINAL
@@ -832,9 +817,6 @@ class ContractPortal {
                 aVal = parseFloat(aVal) || 0;
                 bVal = parseFloat(bVal) || 0;
             } else if (column === 'valorMedido' || column === 'saldoContrato') {
-                aVal = parseFloat(aVal) || 0;
-                bVal = parseFloat(bVal) || 0;
-            } else if (column === 'retentionValue') {
                 aVal = parseFloat(aVal) || 0;
                 bVal = parseFloat(bVal) || 0;
             } else {
