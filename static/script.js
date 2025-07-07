@@ -253,7 +253,11 @@ class ContractPortal {
             'ongoing': 'status-em-andamento',
             'finalizado': 'status-finalizado',
             'finished': 'status-finalizado',
-            'completed': 'status-finalizado'
+            'completed': 'status-finalizado',
+            // Adicionando mapeamentos específicos para os status que aparecem na sua base
+            'partially-measured': 'status-em-andamento',
+            'fully-measured': 'status-aprovado',
+            'measured': 'status-aprovado'
         };
         
         return statusMap[normalizedStatus] || 'status-default';
@@ -374,12 +378,12 @@ class ContractPortal {
         const uniqueSuppliers = new Set(contracts.map(c => c.supplierName));
         this.totalSuppliersCard.textContent = uniqueSuppliers.size;
 
-        // Expiring contracts (next 30 days)
-        const expiringContracts = contracts.filter(contract => {
+        // Expiring contracts - CORRIGIDO: usar todos os contratos, não apenas os filtrados
+        const allExpiringContracts = this.allContracts.filter(contract => {
             const daysToExpiration = this.getDaysToExpiration(contract.endDate);
             return daysToExpiration >= 0 && daysToExpiration <= 30;
         });
-        this.expiringContractsCard.textContent = expiringContracts.length;
+        this.expiringContractsCard.textContent = allExpiringContracts.length;
     }
 
     sortTable(column) {
