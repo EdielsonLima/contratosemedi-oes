@@ -76,41 +76,6 @@ async function fetchAllContracts() {
     return allContracts;
 }
 
-// Função para buscar todas as medições com paginação
-async function fetchAllMeasurements() {
-    let allMeasurements = [];
-    let offset = 0;
-    const limit = 200;
-    let hasMore = true;
-
-    while (hasMore) {
-        try {
-            const url = `${API_BASE_URL}/supply-contracts/measurements/all?limit=${limit}&offset=${offset}`;
-            console.log(`🔄 Buscando medições: offset=${offset}, limit=${limit}`);
-            
-            const data = await makeAuthenticatedRequest(url);
-            
-            if (data && data.data && Array.isArray(data.data)) {
-                allMeasurements = allMeasurements.concat(data.data);
-                console.log(`✅ Recebidas ${data.data.length} medições. Total: ${allMeasurements.length}`);
-                
-                // Verificar se há mais dados
-                hasMore = data.data.length === limit;
-                offset += limit;
-            } else {
-                console.log('❌ Estrutura de dados inesperada:', data);
-                hasMore = false;
-            }
-        } catch (error) {
-            console.error(`❌ Erro ao buscar medições (offset ${offset}):`, error.message);
-            hasMore = false;
-        }
-    }
-
-    console.log(`🎉 Total de medições carregadas: ${allMeasurements.length}`);
-    return allMeasurements;
-}
-
 // API Routes
 app.get('/api/contracts', async (req, res) => {
     try {
@@ -131,20 +96,6 @@ app.get('/api/contracts', async (req, res) => {
         console.error('❌ Erro na API de contratos:', error);
         res.status(500).json({ 
             error: 'Erro ao buscar contratos', 
-            details: error.message 
-        });
-    }
-});
-
-app.get('/api/measurements', async (req, res) => {
-    try {
-        console.log('📡 Iniciando busca de medições...');
-        const measurements = await fetchAllMeasurements();
-        res.json(measurements);
-    } catch (error) {
-        console.error('❌ Erro na API de medições:', error);
-        res.status(500).json({ 
-            error: 'Erro ao buscar medições', 
             details: error.message 
         });
     }
@@ -212,12 +163,7 @@ app.delete('/api/attachments/:id', async (req, res) => {
 });
 
 // Servir arquivos estáticos
-app.use('/static', express.static(path.join(__dirname, 'static')));
-
-// Rota para a página de medições
-app.get('/measurements', (req, res) => {
-    res.sendFile(path.join(__dirname, 'static', 'measurements.html'));
-});
+app.use(express.static(path.join(__dirname, 'static')));
 
 // Rota principal
 app.get('/', (req, res) => {
@@ -227,5 +173,4 @@ app.get('/', (req, res) => {
 app.listen(PORT, () => {
     console.log(`🚀 Servidor rodando na porta ${PORT}`);
     console.log(`📱 Acesse: http://localhost:${PORT}`);
-    console.log(`📊 Medições: http://localhost:${PORT}/measurements`);
 });
