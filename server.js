@@ -14,15 +14,21 @@ const ATTACHMENTS_FILE = path.join(__dirname, 'attachments.json');
 
 // Carregar anexos do arquivo
 function loadAttachments() {
+    console.log('🔄 Carregando anexos do arquivo:', ATTACHMENTS_FILE);
     try {
         if (fs.existsSync(ATTACHMENTS_FILE)) {
             const data = fs.readFileSync(ATTACHMENTS_FILE, 'utf8');
             const parsed = JSON.parse(data);
+            console.log('📁 Dados carregados:', {
+                attachments: Object.keys(parsed.attachments || {}).length,
+                counter: parsed.counter
+            });
             return {
                 attachments: new Map(Object.entries(parsed.attachments || {})),
                 counter: parsed.counter || 1
             };
         }
+        console.log('📁 Arquivo não existe, criando estrutura vazia');
     } catch (error) {
         console.error('Erro ao carregar anexos:', error);
     }
@@ -34,13 +40,18 @@ function loadAttachments() {
 
 // Salvar anexos no arquivo
 function saveAttachments() {
+    console.log('💾 Salvando anexos no arquivo...');
     try {
         const data = {
             attachments: Object.fromEntries(attachmentsDB),
             counter: attachmentIdCounter
         };
+        console.log('💾 Dados a serem salvos:', {
+            attachments: Object.keys(data.attachments).length,
+            counter: data.counter
+        });
         fs.writeFileSync(ATTACHMENTS_FILE, JSON.stringify(data, null, 2));
-        console.log('📁 Anexos salvos no arquivo');
+        console.log('✅ Anexos salvos com sucesso no arquivo');
     } catch (error) {
         console.error('Erro ao salvar anexos:', error);
     }
@@ -51,7 +62,16 @@ const attachmentData = loadAttachments();
 let attachmentsDB = attachmentData.attachments;
 let attachmentIdCounter = attachmentData.counter;
 
-console.log(`📎 Carregados ${attachmentsDB.size} anexos do arquivo`);
+console.log(`📎 Sistema iniciado com ${attachmentsDB.size} anexos carregados`);
+console.log(`🔢 Próximo ID será: ${attachmentIdCounter}`);
+
+// Debug: mostrar anexos carregados
+if (attachmentsDB.size > 0) {
+    console.log('📋 Anexos carregados:');
+    for (const [id, attachment] of attachmentsDB.entries()) {
+        console.log(`  - ID ${id}: ${attachment.fileName} (Contrato: ${attachment.contractNumber})`);
+    }
+}
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -168,10 +188,14 @@ app.get('/api/contracts', async (req, res) => {
 app.get('/api/contracts/:contractNumber/attachments', async (req, res) => {
     try {
         const { contractNumber } = req.params;
+        console.log(`🔍 Buscando anexos para contrato ${contractNumber}`);
+        console.log(`🔍 Total de anexos no sistema: ${attachmentsDB.size}`);
+        
         const attachments = Array.from(attachmentsDB.values())
             .filter(attachment => attachment.contractNumber === contractNumber)
             .map(({ fileData, ...attachment }) => attachment); // Remove fileData da resposta
         
+        console.log(`🔍 Encontrados ${attachments.length} anexos para contrato ${contractNumber}`);
         res.json(attachments);
     } catch (error) {
         console.error('Erro ao buscar anexos:', error);
@@ -184,6 +208,8 @@ app.post('/api/contracts/:contractNumber/attachments', async (req, res) => {
     try {
         const { contractNumber } = req.params;
         const { fileName, fileData, fileSize } = req.body;
+        
+        console.log(`📎 Recebendo anexo para contrato ${contractNumber}: ${fileName}`);
         
         if (!fileName || !fileData) {
             return res.status(400).json({ error: 'Nome do arquivo e dados são obrigatórios' });
@@ -198,10 +224,13 @@ app.post('/api/contracts/:contractNumber/attachments', async (req, res) => {
             uploadDate: new Date().toISOString()
         };
         
+        console.log(`📎 Criando anexo com ID ${attachment.id}`);
         attachmentsDB.set(attachment.id, attachment);
+        console.log(`📎 Anexo adicionado ao Map. Total: ${attachmentsDB.size}`);
+        
         saveAttachments(); // Salvar no arquivo
         
-        console.log(`📎 Anexo salvo: ${fileName} para contrato ${contractNumber}`);
+        console.log(`✅ Anexo salvo: ${fileName} para contrato ${contractNumber} (ID: ${attachment.id})`);
         
         res.json({ 
             id: attachment.id,
@@ -241,14 +270,16 @@ app.get('/api/attachments/:id/download', async (req, res) => {
 app.delete('/api/attachments/:id', async (req, res) => {
     try {
         const attachmentId = parseInt(req.params.id);
+        console.log(`🗑️ Tentando excluir anexo ID ${attachmentId}`);
         
         if (attachmentsDB.has(attachmentId)) {
             const attachment = attachmentsDB.get(attachmentId);
             attachmentsDB.delete(attachmentId);
             saveAttachments(); // Salvar no arquivo
-            console.log(`🗑️ Anexo excluído: ${attachment.fileName}`);
+            console.log(`✅ Anexo excluído: ${attachment.fileName} (ID: ${attachmentId})`);
             res.json({ message: 'Anexo excluído com sucesso' });
         } else {
+            console.log(`❌ Anexo ID ${attachmentId} não encontrado`);
             res.status(404).json({ error: 'Anexo não encontrado' });
         }
         
@@ -486,9 +517,16 @@ function calculateMeasurementsData(contracts, measurements) {
 
 // Função para adicionar contagem de anexos aos contratos
 async function addAttachmentCounts(contracts) {
+    console.log(`📊 Calculando contadores de anexos para ${contracts.length} contratos`);
+    console.log(`📊 Total de anexos disponíveis: ${attachmentsDB.size}`);
+    
     return contracts.map(contract => {
         const attachments = Array.from(attachmentsDB.values())
             .filter(attachment => attachment.contractNumber === contract.contractNumber);
+        
+        if (attachments.length > 0) {
+            console.log(`📊 Contrato ${contract.contractNumber}: ${attachments.length} anexos`);
+        }
         
         return {
             ...contract,
