@@ -146,14 +146,27 @@ class ContractPortal {
             
             this.allContracts = await response.json();
             
-            // DEBUG: Mostrar todos os campos do primeiro contrato
+            // DEBUG DETALHADO: Mostrar estrutura completa do primeiro contrato
             if (this.allContracts.length > 0) {
-                console.log('🔍 FRONTEND - CAMPOS DISPONÍVEIS NO PRIMEIRO CONTRATO:');
-                console.log(Object.keys(this.allContracts[0]));
-                
-                // Procurar especificamente campos de caução/retenção
                 const contract = this.allContracts[0];
+                console.log('🔍 FRONTEND - ESTRUTURA COMPLETA DO PRIMEIRO CONTRATO:');
+                console.log(JSON.stringify(contract, null, 2));
+                
+                console.log('📋 FRONTEND - CAMPOS DISPONÍVEIS:');
+                console.log(Object.keys(contract));
+                
+                // Verificar especificamente o objeto securityDeposit
+                if (contract.securityDeposit) {
+                    console.log('✅ FRONTEND - OBJETO securityDeposit ENCONTRADO:');
+                    console.log(JSON.stringify(contract.securityDeposit, null, 2));
+                } else {
+                    console.log('❌ FRONTEND - Objeto securityDeposit NÃO ENCONTRADO');
+                }
+                
+                // Procurar campos de caução/retenção
                 const possibleCautionFields = Object.keys(contract).filter(key => 
+                    key.toLowerCase().includes('security') ||
+                    key.toLowerCase().includes('deposit') ||
                     key.toLowerCase().includes('cauc') ||
                     key.toLowerCase().includes('reten') ||
                     key.toLowerCase().includes('guarantee') ||
@@ -173,6 +186,24 @@ class ContractPortal {
                     });
                 } else {
                     console.log('❌ FRONTEND - Nenhum campo de caução/retenção encontrado nos contratos');
+                }
+                
+                // Verificar especificamente o retentionValue
+                console.log(`💰 FRONTEND - retentionValue: ${contract.retentionValue}`);
+                
+                // Mostrar alguns contratos com valores diferentes de zero
+                console.log('🔍 FRONTEND - Verificando contratos com valores de caução...');
+                const contractsWithRetention = this.allContracts.filter(c => 
+                    (c.retentionValue && c.retentionValue > 0) ||
+                    (c.securityDeposit && c.securityDeposit.securityDepositBalance > 0) ||
+                    (c.securityDeposit && c.securityDeposit.securityDepositPercentage > 0)
+                );
+                
+                console.log(`📊 FRONTEND - Contratos com caução: ${contractsWithRetention.length} de ${this.allContracts.length}`);
+                
+                if (contractsWithRetention.length > 0) {
+                    console.log('✅ FRONTEND - Exemplo de contrato com caução:');
+                    console.log(JSON.stringify(contractsWithRetention[0], null, 2));
                 }
             }
             
