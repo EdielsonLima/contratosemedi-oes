@@ -433,6 +433,7 @@ class MeasurementsPortal {
 
     clearFilters() {
         this.companyFilter.value = "";
+    }
 
     toggleFilters() {
         this.filtersCollapsed = !this.filtersCollapsed;
