@@ -37,15 +37,18 @@ body {
     min-height: 100vh;
     line-height: 1.6;
     overflow-x: hidden;
+    font-size: 14px;
 }
 
 .container {
     width: 100%;
     min-height: 100vh;
-    padding: 15px;
+    padding: 10px;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 15px;
+    max-width: 1920px;
+    margin: 0 auto;
 }
 
 /* Header Styles */
@@ -54,7 +57,7 @@ body {
     justify-content: space-between;
     align-items: center;
     background: rgba(255, 255, 255, 0.95);
-    padding: 20px 30px;
+    padding: 15px 20px;
     border-radius: var(--border-radius);
     box-shadow: var(--box-shadow);
     backdrop-filter: blur(10px);
@@ -64,21 +67,21 @@ body {
 .header h1 {
     margin: 0;
     color: var(--dark-color);
-    font-size: 2.2em;
+    font-size: 1.5em;
     font-weight: 600;
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 10px;
 }
 
 .header-actions {
     display: flex;
-    gap: 15px;
+    gap: 10px;
 }
 
 .btn-refresh,
 .btn-export {
-    padding: 12px 20px;
+    padding: 8px 15px;
     border: none;
     border-radius: var(--border-radius);
     cursor: pointer;
@@ -86,7 +89,8 @@ body {
     transition: var(--transition);
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
+    font-size: 0.9em;
 }
 
 .btn-refresh {
@@ -129,41 +133,41 @@ body {
 
 .loading-spinner {
     background: white;
-    padding: 40px;
+    padding: 30px;
     border-radius: var(--border-radius);
     text-align: center;
     box-shadow: var(--box-shadow);
 }
 
 .loading-spinner i {
-    font-size: 3em;
+    font-size: 2.5em;
     color: var(--primary-color);
-    margin-bottom: 20px;
+    margin-bottom: 15px;
 }
 
 .loading-spinner p {
     margin: 0;
-    font-size: 1.2em;
+    font-size: 1.1em;
     color: var(--dark-color);
 }
 
 /* Stats Cards */
 .stats-cards {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 15px;
     flex-shrink: 0;
 }
 
 .card {
     background: white;
-    padding: 25px;
+    padding: 18px;
     border-radius: var(--border-radius);
     box-shadow: var(--box-shadow);
     transition: var(--transition);
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 15px;
     position: relative;
     overflow: hidden;
 }
@@ -185,18 +189,18 @@ body {
 .card.expiring-contracts::before { background: var(--danger-color); }
 
 .card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15);
 }
 
 .card-icon {
-    width: 60px;
-    height: 60px;
+    width: 45px;
+    height: 45px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.5em;
+    font-size: 1.2em;
     color: white;
     flex-shrink: 0;
 }
@@ -208,8 +212,8 @@ body {
 .expiring-contracts .card-icon { background: var(--danger-color); }
 
 .card-content h2 {
-    margin: 0 0 10px 0;
-    font-size: 1em;
+    margin: 0 0 8px 0;
+    font-size: 0.8em;
     color: #666;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -218,7 +222,7 @@ body {
 
 .card-content p {
     margin: 0;
-    font-size: 2em;
+    font-size: 1.6em;
     font-weight: 700;
     color: var(--dark-color);
 }
@@ -236,7 +240,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 30px;
+    padding: 15px 20px;
     background: var(--light-color);
     border-bottom: 1px solid #dee2e6;
 }
@@ -246,13 +250,14 @@ body {
     color: var(--dark-color);
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
+    font-size: 1.1em;
 }
 
 .btn-toggle {
     background: none;
     border: none;
-    font-size: 1.2em;
+    font-size: 1.1em;
     color: var(--dark-color);
     cursor: pointer;
     transition: var(--transition);
@@ -264,36 +269,36 @@ body {
 
 .filters {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
-    padding: 25px 30px;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    padding: 20px;
     transition: var(--transition);
 }
 
 .filters.collapsed {
     max-height: 0;
-    padding: 0 30px;
+    padding: 0 20px;
     overflow: hidden;
 }
 
 .filter-group {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
 }
 
 .filter-group label {
     font-weight: 600;
     color: var(--dark-color);
-    font-size: 0.9em;
+    font-size: 0.85em;
 }
 
 .filter-group input,
 .filter-group select {
-    padding: 12px 15px;
+    padding: 10px 12px;
     border: 2px solid #e9ecef;
     border-radius: var(--border-radius);
-    font-size: 1em;
+    font-size: 0.9em;
     transition: var(--transition);
     background: white;
 }
@@ -311,7 +316,7 @@ body {
 }
 
 .btn-clear {
-    padding: 12px 20px;
+    padding: 10px 15px;
     background: var(--danger-color);
     color: white;
     border: none;
@@ -321,7 +326,8 @@ body {
     transition: var(--transition);
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
+    font-size: 0.9em;
 }
 
 .btn-clear:hover {
@@ -345,7 +351,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 30px;
+    padding: 15px 20px;
     background: var(--light-color);
     border-bottom: 1px solid #dee2e6;
     flex-shrink: 0;
@@ -356,12 +362,13 @@ body {
     color: var(--dark-color);
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
+    font-size: 1.1em;
 }
 
 .table-info {
     color: #666;
-    font-size: 0.9em;
+    font-size: 0.85em;
 }
 
 .table-container {
@@ -373,12 +380,12 @@ body {
 table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 1200px;
+    min-width: 1000px;
 }
 
 table th,
 table td {
-    padding: 15px 12px;
+    padding: 12px 10px;
     text-align: left;
     border-bottom: 1px solid #e9ecef;
     white-space: nowrap;
@@ -390,7 +397,7 @@ table th {
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    font-size: 0.85em;
+    font-size: 0.75em;
     position: sticky;
     top: 0;
     z-index: 10;
@@ -403,7 +410,7 @@ table th:hover {
 }
 
 .sort-icon {
-    margin-left: 8px;
+    margin-left: 6px;
     opacity: 0.5;
     transition: var(--transition);
 }
@@ -427,28 +434,28 @@ table tr:hover {
 }
 
 table td {
-    font-size: 0.9em;
+    font-size: 0.85em;
 }
 
 .text-center {
     text-align: center;
-    padding: 40px 20px;
+    padding: 30px 20px;
     color: #666;
     font-style: italic;
 }
 
 /* Status Colors - Comprehensive Status Styling */
 .status-cell {
-    padding: 6px 12px !important;
-    border-radius: 20px;
+    padding: 4px 10px !important;
+    border-radius: 15px;
     font-weight: 600;
-    font-size: 0.85em;
+    font-size: 0.75em;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.3px;
     text-align: center;
     white-space: nowrap;
     display: inline-block;
-    min-width: 80px;
+    min-width: 70px;
 }
 
 /* Status específicos com cores distintas */
@@ -537,24 +544,27 @@ table td {
     color: var(--danger-color); 
     font-weight: 600;
     background: rgba(220, 53, 69, 0.1);
-    padding: 4px 8px;
-    border-radius: 12px;
+    padding: 3px 6px;
+    border-radius: 10px;
+    font-size: 0.8em;
 }
 
 .days-expiring { 
     color: #856404; 
     font-weight: 600;
     background: rgba(255, 193, 7, 0.1);
-    padding: 4px 8px;
-    border-radius: 12px;
+    padding: 3px 6px;
+    border-radius: 10px;
+    font-size: 0.8em;
 }
 
 .days-future { 
     color: var(--success-color); 
     font-weight: 600;
     background: rgba(40, 167, 69, 0.1);
-    padding: 4px 8px;
-    border-radius: 12px;
+    padding: 3px 6px;
+    border-radius: 10px;
+    font-size: 0.8em;
 }
 
 /* Toast Notifications */
@@ -567,16 +577,17 @@ table td {
 
 .toast {
     background: white;
-    padding: 15px 20px;
+    padding: 12px 15px;
     border-radius: var(--border-radius);
     box-shadow: var(--box-shadow);
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     border-left: 4px solid var(--success-color);
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     transform: translateX(400px);
     transition: var(--transition);
+    font-size: 0.9em;
 }
 
 .toast.show {
@@ -591,33 +602,13 @@ table td {
     border-left-color: var(--warning-color);
 }
 
-/* Responsive Design */
-@media (max-width: 1200px) {
-    .container {
-        padding: 10px;
-    }
-    
-    .stats-cards {
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    }
-    
-    .filters {
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        padding: 20px 25px;
-    }
-}
+/* Responsive Design - Otimizado para diferentes tamanhos */
 
-@media (max-width: 768px) {
+/* Laptops grandes (1440px+) */
+@media (min-width: 1440px) {
     .container {
-        padding: 8px;
-        gap: 15px;
-    }
-    
-    .header {
-        flex-direction: column;
+        padding: 15px;
         gap: 20px;
-        text-align: center;
-        padding: 20px;
     }
     
     .header h1 {
@@ -625,15 +616,8 @@ table td {
     }
     
     .stats-cards {
-        grid-template-columns: 1fr;
-        gap: 15px;
-    }
-    
-    .card {
-        flex-direction: column;
-        text-align: center;
-        gap: 15px;
-        padding: 20px;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 20px;
     }
     
     .card-content p {
@@ -641,24 +625,68 @@ table td {
     }
     
     .filters {
-        grid-template-columns: 1fr;
-        gap: 15px;
-        padding: 20px;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 20px;
+    }
+}
+
+/* Notebooks padrão (1024px - 1439px) */
+@media (max-width: 1439px) and (min-width: 1024px) {
+    body {
+        font-size: 13px;
     }
     
-    .table-header {
-        flex-direction: column;
-        gap: 10px;
-        text-align: center;
-        padding: 15px 20px;
+    .container {
+        padding: 8px;
+        gap: 12px;
     }
     
-    .table-container {
-        overflow-x: auto;
+    .header {
+        padding: 12px 15px;
+    }
+    
+    .header h1 {
+        font-size: 1.4em;
+    }
+    
+    .stats-cards {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 12px;
+    }
+    
+    .card {
+        padding: 15px;
+        gap: 12px;
+    }
+    
+    .card-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.1em;
+    }
+    
+    .card-content h2 {
+        font-size: 0.75em;
+    }
+    
+    .card-content p {
+        font-size: 1.4em;
+    }
+    
+    .filters {
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 12px;
+        padding: 15px;
+    }
+    
+    .filter-group input,
+    .filter-group select {
+        padding: 8px 10px;
+        font-size: 0.85em;
     }
     
     table {
-        min-width: 800px;
+        min-width: 900px;
     }
     
     table th,
@@ -668,18 +696,194 @@ table td {
     }
     
     .status-cell {
+        font-size: 0.7em;
+        padding: 3px 8px !important;
+        min-width: 60px;
+    }
+}
+
+/* Tablets (768px - 1023px) */
+@media (max-width: 1023px) and (min-width: 768px) {
+    body {
+        font-size: 12px;
+    }
+    
+    .container {
+        padding: 6px;
+        gap: 10px;
+    }
+    
+    .header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+        padding: 15px;
+    }
+    
+    .header h1 {
+        font-size: 1.3em;
+    }
+    
+    .header-actions {
+        gap: 8px;
+    }
+    
+    .btn-refresh,
+    .btn-export {
+        padding: 6px 12px;
+        font-size: 0.8em;
+    }
+    
+    .stats-cards {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    
+    .card {
+        padding: 12px;
+        gap: 10px;
+    }
+    
+    .card-icon {
+        width: 35px;
+        height: 35px;
+        font-size: 1em;
+    }
+    
+    .card-content p {
+        font-size: 1.3em;
+    }
+    
+    .filters {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        padding: 12px;
+    }
+    
+    .table-container {
+        overflow-x: auto;
+    }
+    
+    table {
+        min-width: 700px;
+    }
+    
+    table th,
+    table td {
+        padding: 8px 6px;
         font-size: 0.75em;
-        padding: 4px 8px !important;
-        min-width: 70px;
+    }
+    
+    .status-cell {
+        font-size: 0.65em;
+        padding: 2px 6px !important;
+        min-width: 50px;
+    }
+}
+
+/* Mobile (até 767px) */
+@media (max-width: 767px) {
+    body {
+        font-size: 11px;
+    }
+    
+    .container {
+        padding: 5px;
+        gap: 8px;
+    }
+    
+    .header {
+        flex-direction: column;
+        gap: 12px;
+        text-align: center;
+        padding: 12px;
+    }
+    
+    .header h1 {
+        font-size: 1.2em;
+    }
+    
+    .header-actions {
+        flex-direction: column;
+        width: 100%;
+        gap: 6px;
+    }
+    
+    .btn-refresh,
+    .btn-export {
+        width: 100%;
+        justify-content: center;
+        padding: 8px 12px;
+        font-size: 0.8em;
+    }
+    
+    .stats-cards {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+    
+    .card {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+        padding: 15px;
+    }
+    
+    .card-content p {
+        font-size: 1.5em;
+    }
+    
+    .filters {
+        grid-template-columns: 1fr;
+        gap: 8px;
+        padding: 10px;
+    }
+    
+    .filter-actions {
+        justify-content: center;
+    }
+    
+    .btn-clear {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .table-header {
+        flex-direction: column;
+        gap: 8px;
+        text-align: center;
+        padding: 10px 12px;
+    }
+    
+    .table-container {
+        overflow-x: auto;
+    }
+    
+    table {
+        min-width: 600px;
+        font-size: 0.7em;
+    }
+    
+    table th,
+    table td {
+        padding: 6px 4px;
+        font-size: 0.7em;
+    }
+    
+    .status-cell {
+        font-size: 0.6em;
+        padding: 2px 4px !important;
+        min-width: 45px;
     }
     
     .toast-container {
-        left: 10px;
-        right: 10px;
+        left: 5px;
+        right: 5px;
     }
     
     .toast {
         transform: translateY(-100px);
+        font-size: 0.8em;
     }
     
     .toast.show {
@@ -687,49 +891,84 @@ table td {
     }
 }
 
+/* Mobile pequeno (até 480px) */
 @media (max-width: 480px) {
     .container {
-        padding: 5px;
+        padding: 3px;
     }
     
     .header h1 {
-        font-size: 1.5em;
+        font-size: 1.1em;
     }
     
     .card-content p {
-        font-size: 1.5em;
+        font-size: 1.3em;
     }
     
     table {
-        min-width: 600px;
-        font-size: 0.75em;
+        min-width: 500px;
+        font-size: 0.65em;
+    }
+    
+    .status-cell {
+        font-size: 0.55em;
+        padding: 1px 3px !important;
+        min-width: 40px;
     }
     
     .filters-header,
     .table-header {
-        padding: 10px 15px;
+        padding: 8px 10px;
     }
     
     .filters {
-        padding: 15px;
-    }
-    
-    .status-cell {
-        font-size: 0.7em;
-        padding: 3px 6px !important;
-        min-width: 60px;
+        padding: 8px;
     }
 }
 
 /* Altura mínima para a seção da tabela */
 @media (min-height: 600px) {
     .table-section {
-        min-height: 400px;
+        min-height: 300px;
     }
 }
 
 @media (min-height: 800px) {
     .table-section {
-        min-height: 500px;
+        min-height: 400px;
+    }
+}
+
+/* Otimizações específicas para notebooks */
+@media (max-width: 1366px) and (min-width: 1024px) {
+    .stats-cards {
+        grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    }
+    
+    .filters {
+        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    }
+    
+    table {
+        min-width: 850px;
+    }
+}
+
+/* Ajustes para telas muito pequenas em altura */
+@media (max-height: 600px) {
+    .container {
+        gap: 8px;
+    }
+    
+    .card {
+        padding: 10px;
+    }
+    
+    .filters {
+        padding: 10px;
+    }
+    
+    .table-section {
+        min-height: 200px;
     }
 }
