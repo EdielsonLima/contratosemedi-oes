@@ -91,14 +91,20 @@ app.get('/api/contracts', async (req, res) => {
                 console.log('🔍 DEBUG CAUÇÃO/RETENÇÃO - PRIMEIRO CONTRATO:');
                 console.log('📋 Todos os campos:', Object.keys(contract));
                 
-                // Procurar campos que podem conter caução/retenção
+                // Procurar campos específicos de caução/retenção
                 const possibleCautionFields = Object.keys(contract).filter(key => 
+                    key.toLowerCase().includes('securitydepositvalue') ||
+                    key.toLowerCase().includes('securitydeposit') ||
+                    key.toLowerCase().includes('security') ||
+                    key.toLowerCase().includes('deposit') ||
                     key.toLowerCase().includes('cauc') ||
                     key.toLowerCase().includes('reten') ||
                     key.toLowerCase().includes('guarantee') ||
                     key.toLowerCase().includes('warranty') ||
                     key.toLowerCase().includes('percent') ||
-                    key.toLowerCase().includes('rate')
+                    key.toLowerCase().includes('rate') ||
+                    key.toLowerCase().includes('withhold') ||
+                    key.toLowerCase().includes('deduct')
                 );
                 
                 console.log('🎯 Campos possíveis para caução/retenção:', possibleCautionFields);
@@ -107,6 +113,13 @@ app.get('/api/contracts', async (req, res) => {
                 possibleCautionFields.forEach(field => {
                     console.log(`   ${field}: ${contract[field]}`);
                 });
+                
+                // Verificar especificamente o campo securityDepositValue
+                if (contract.securityDepositValue !== undefined) {
+                    console.log(`✅ ENCONTRADO securityDepositValue: ${contract.securityDepositValue}`);
+                } else {
+                    console.log(`❌ Campo securityDepositValue NÃO encontrado no contrato`);
+                }
             }
         });
 
@@ -348,6 +361,10 @@ function calculateMeasurementsData(contracts, measurements) {
         // DEBUG: Verificar campos relacionados a caução/retenção nas medições
         console.log('🔍 DEBUG CAUÇÃO/RETENÇÃO - PRIMEIRA MEDIÇÃO:');
         const possibleCautionFieldsMeasurement = Object.keys(measurements[0]).filter(key => 
+            key.toLowerCase().includes('securitydepositvalue') ||
+            key.toLowerCase().includes('securitydeposit') ||
+            key.toLowerCase().includes('security') ||
+            key.toLowerCase().includes('deposit') ||
             key.toLowerCase().includes('cauc') ||
             key.toLowerCase().includes('reten') ||
             key.toLowerCase().includes('guarantee') ||
@@ -362,6 +379,13 @@ function calculateMeasurementsData(contracts, measurements) {
         possibleCautionFieldsMeasurement.forEach(field => {
             console.log(`   ${field}: ${measurements[0][field]}`);
         });
+        
+        // Verificar especificamente o campo securityDepositValue nas medições
+        if (measurements[0].securityDepositValue !== undefined) {
+            console.log(`✅ ENCONTRADO securityDepositValue na medição: ${measurements[0].securityDepositValue}`);
+        } else {
+            console.log(`❌ Campo securityDepositValue NÃO encontrado na medição`);
+        }
     }
     
     // Debug: mostrar estrutura de um contrato
@@ -467,7 +491,9 @@ function calculateMeasurementsData(contracts, measurements) {
             ...contract,
             valorMedido: totalMeasuredValue,
             saldoContrato: remainingBalance,
-            numeroMedicoes: contractMeasurements.length
+            numeroMedicoes: contractMeasurements.length,
+            // Calcular valor de caução/retenção
+            retentionValue: calculateRetentionValue(contract, contractMeasurements)
         };
     });
    
@@ -478,6 +504,63 @@ function calculateMeasurementsData(contracts, measurements) {
     return result;
 }
 
+// Função para calcular valor de caução/retenção
+function calculateRetentionValue(contract, measurements) {
+    console.log(`🔍 Calculando caução para contrato ${contract.contractNumber}`);
+    
+    // 1. Primeiro, verificar se existe valor direto no contrato
+    const contractRetention = parseFloat(contract.securityDepositValue || 
+                                       contract.securityDeposit || 
+                                       contract.security || 
+                                       contract.deposit || 
+                                       contract.caucao || 
+                                       contract.retencao || 
+                                       contract.retention || 0);
+    
+    if (contractRetention > 0) {
+        console.log(`✅ Contrato ${contract.contractNumber}: Valor direto de caução = R$ ${contractRetention}`);
+        return contractRetention;
+    }
+    
+    // 2. Verificar se existe valor nas medições
+    let totalRetentionFromMeasurements = 0;
+    measurements.forEach(measurement => {
+        const measurementRetention = parseFloat(measurement.securityDepositValue || 
+                                              measurement.securityDeposit || 
+                                              measurement.security || 
+                                              measurement.deposit || 
+                                              measurement.caucao || 
+                                              measurement.retencao || 
+                                              measurement.retention || 0);
+        totalRetentionFromMeasurements += measurementRetention;
+    });
+    
+    if (totalRetentionFromMeasurements > 0) {
+        console.log(`✅ Contrato ${contract.contractNumber}: Valor das medições = R$ ${totalRetentionFromMeasurements}`);
+        return totalRetentionFromMeasurements;
+    }
+    
+    // 3. Se não encontrou valor direto, verificar se existe porcentagem
+    const retentionPercentage = parseFloat(contract.securityDepositPercentage || 
+                                         contract.retentionPercentage || 
+                                         contract.caucaoPercentage || 
+                                         contract.retencaoPercentage || 0);
+    
+    if (retentionPercentage > 0) {
+        const totalMeasuredValue = measurements.reduce((sum, measurement) => {
+            const laborValue = parseFloat(measurement.totalLaborValue || 0);
+            const materialValue = parseFloat(measurement.totalMaterialValue || 0);
+            return sum + laborValue + materialValue;
+        }, 0);
+        
+        const calculatedRetention = (totalMeasuredValue * retentionPercentage) / 100;
+        console.log(`✅ Contrato ${contract.contractNumber}: Calculado ${retentionPercentage}% de R$ ${totalMeasuredValue} = R$ ${calculatedRetention}`);
+        return calculatedRetention;
+    }
+    
+    console.log(`❌ Contrato ${contract.contractNumber}: Nenhum valor de caução encontrado`);
+    return 0;
+}
 // Função para adicionar contagem de anexos aos contratos
 async function addAttachmentCounts(contracts) {
     console.log(`📊 Calculando contadores de anexos para ${contracts.length} contratos`);
