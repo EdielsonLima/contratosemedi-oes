@@ -244,6 +244,10 @@ class MeasurementsPortal {
     }
 
     populateFilters() {
+        console.log('🔧 Populando filtros...');
+        console.log(`📊 Total de contratos disponíveis: ${this.allContracts.length}`);
+        console.log(`📊 Total de medições processadas: ${this.allMeasurements.length}`);
+        
         // Clear existing options (except first)
         [this.companyFilter, this.supplierFilter, this.contractFilter].forEach(select => {
             if (select) {
@@ -253,8 +257,9 @@ class MeasurementsPortal {
             }
         });
 
-        // Populate company filter
-        const companies = [...new Set(this.allMeasurements.map(m => m.companyName))].sort();
+        // Populate company filter - usar TODOS os contratos, não apenas os com medições
+        const companies = [...new Set(this.allContracts.map(c => c.companyName))].filter(Boolean).sort();
+        console.log(`🏢 Empresas encontradas: ${companies.length}`, companies);
         companies.forEach(company => {
             if (this.companyFilter) {
                 const option = document.createElement("option");
@@ -264,8 +269,9 @@ class MeasurementsPortal {
             }
         });
 
-        // Populate supplier filter
-        const suppliers = [...new Set(this.allMeasurements.map(m => m.supplierName))].sort();
+        // Populate supplier filter - usar TODOS os contratos, não apenas os com medições
+        const suppliers = [...new Set(this.allContracts.map(c => c.supplierName))].filter(Boolean).sort();
+        console.log(`🚚 Fornecedores encontrados: ${suppliers.length}`, suppliers);
         suppliers.forEach(supplier => {
             if (this.supplierFilter) {
                 const option = document.createElement("option");
@@ -275,8 +281,9 @@ class MeasurementsPortal {
             }
         });
 
-        // Populate contract filter
-        const contracts = [...new Set(this.allMeasurements.map(m => m.contractNumber))].sort();
+        // Populate contract filter - usar TODOS os contratos, não apenas os com medições
+        const contracts = [...new Set(this.allContracts.map(c => c.contractNumber))].filter(Boolean).sort();
+        console.log(`📋 Contratos encontrados: ${contracts.length}`, contracts);
         contracts.forEach(contract => {
             if (this.contractFilter) {
                 const option = document.createElement("option");
@@ -288,11 +295,20 @@ class MeasurementsPortal {
     }
 
     applyFilters() {
+        console.log('🔍 Aplicando filtros...');
         const selectedCompany = this.companyFilter?.value || '';
         const selectedSupplier = this.supplierFilter?.value || '';
         const selectedContract = this.contractFilter?.value || '';
         const dateFrom = this.dateFromFilter?.value || '';
         const dateTo = this.dateToFilter?.value || '';
+        
+        console.log('📋 Filtros selecionados:', {
+            empresa: selectedCompany,
+            fornecedor: selectedSupplier,
+            contrato: selectedContract,
+            dataInicio: dateFrom,
+            dataFim: dateTo
+        });
 
         this.filteredMeasurements = this.allMeasurements.filter(measurement => {
             const matchesCompany = selectedCompany ? measurement.companyName === selectedCompany : true;
@@ -310,8 +326,26 @@ class MeasurementsPortal {
                 }
             }
             
-            return matchesCompany && matchesSupplier && matchesContract && matchesDateRange;
+            const matches = matchesCompany && matchesSupplier && matchesContract && matchesDateRange;
+            
+            // Debug para as primeiras medições
+            if (this.allMeasurements.indexOf(measurement) < 3) {
+                console.log(`🔍 Medição ${measurement.measurementNumber}:`, {
+                    empresa: measurement.companyName,
+                    fornecedor: measurement.supplierName,
+                    contrato: measurement.contractNumber,
+                    matchesCompany,
+                    matchesSupplier,
+                    matchesContract,
+                    matchesDateRange,
+                    resultado: matches
+                });
+            }
+            
+            return matches;
         });
+        
+        console.log(`✅ Medições filtradas: ${this.filteredMeasurements.length} de ${this.allMeasurements.length}`);
 
         this.renderTable();
         this.updateStats();
