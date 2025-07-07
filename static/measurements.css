@@ -62,6 +62,13 @@
 .avg-measurement-value .card-icon { background: var(--info-color); }
 .contracts-with-measurements .card-icon { background: var(--secondary-color); }
 
+/* New card colors for measurements */
+.total-retention .card-icon { background: var(--danger-color); }
+.total-liquid .card-icon { background: var(--success-color); }
+
+.card.total-retention::before { background: var(--danger-color); }
+.card.total-liquid::before { background: var(--success-color); }
+
 /* Form Styles */
 .form-row {
     display: grid;
@@ -556,6 +563,72 @@
 @keyframes spin {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
+}
+
+/* Measurements History Table Specific Styles */
+.measurements-history-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 1000px;
+    background: white;
+}
+
+.measurements-history-table th {
+    background: var(--dark-color);
+    color: white;
+    padding: 12px 8px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.8em;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    cursor: pointer;
+    user-select: none;
+}
+
+.measurements-history-table th:hover {
+    background: #34495e;
+}
+
+.measurements-history-table td {
+    padding: 10px 8px;
+    border-bottom: 1px solid #e9ecef;
+    font-size: 0.85em;
+    white-space: nowrap;
+}
+
+.measurements-history-table tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+.measurements-history-table tr:hover {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+}
+
+.measurement-type {
+    background: var(--info-color);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.7em;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    display: inline-block;
+}
+
+.value-cell.retention {
+    color: var(--danger-color);
+    font-weight: 600;
+}
+
+.value-cell.liquid {
+    color: var(--success-color);
+    font-weight: 600;
 }
 
 /* Enhanced table for measurements */

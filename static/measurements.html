@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Controle de Medições - Silva Packer</title>
+    <title>Histórico de Medições - Silva Packer</title>
     <link rel="stylesheet" href="/styles.css">
     <link rel="stylesheet" href="/measurements.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -15,14 +15,11 @@
                 <button id="backBtn" class="btn-back" title="Voltar para Contratos">
                     <i class="fas fa-arrow-left"></i>
                 </button>
-                <h1><i class="fas fa-ruler-combined"></i> Controle de Medições</h1>
+                <h1><i class="fas fa-history"></i> Histórico de Medições</h1>
             </div>
             <div class="header-actions">
                 <button id="refreshBtn" class="btn-refresh" title="Atualizar dados">
                     <i class="fas fa-sync-alt"></i>
-                </button>
-                <button id="newMeasurementBtn" class="btn-new" title="Nova Medição">
-                    <i class="fas fa-plus"></i> Nova Medição
                 </button>
                 <button id="exportBtn" class="btn-export" title="Exportar para CSV">
                     <i class="fas fa-download"></i> Exportar
@@ -56,31 +53,22 @@
                     <p id="totalMeasuredValue">...</p>
                 </div>
             </div>
-            <div class="card pending-measurements">
+            <div class="card total-retention">
                 <div class="card-icon">
-                    <i class="fas fa-clock"></i>
+                    <i class="fas fa-shield-alt"></i>
                 </div>
                 <div class="card-content">
-                    <h2>Medições Pendentes</h2>
-                    <p id="pendingMeasurements">...</p>
+                    <h2>Total Caução</h2>
+                    <p id="totalRetention">...</p>
                 </div>
             </div>
-            <div class="card approved-measurements">
+            <div class="card total-liquid">
                 <div class="card-icon">
-                    <i class="fas fa-check-circle"></i>
+                    <i class="fas fa-hand-holding-usd"></i>
                 </div>
                 <div class="card-content">
-                    <h2>Medições Aprovadas</h2>
-                    <p id="approvedMeasurements">...</p>
-                </div>
-            </div>
-            <div class="card avg-measurement-value">
-                <div class="card-icon">
-                    <i class="fas fa-chart-bar"></i>
-                </div>
-                <div class="card-content">
-                    <h2>Valor Médio</h2>
-                    <p id="avgMeasurementValue">...</p>
+                    <h2>Total Líquido</h2>
+                    <p id="totalLiquid">...</p>
                 </div>
             </div>
             <div class="card contracts-with-measurements">
@@ -90,6 +78,15 @@
                 <div class="card-content">
                     <h2>Contratos com Medições</h2>
                     <p id="contractsWithMeasurements">...</p>
+                </div>
+            </div>
+            <div class="card avg-measurement-value">
+                <div class="card-icon">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <div class="card-content">
+                    <h2>Valor Médio</h2>
+                    <p id="avgMeasurementValue">...</p>
                 </div>
             </div>
         </div>
@@ -106,16 +103,6 @@
                     <label for="contractFilter">Contrato</label>
                     <select id="contractFilter">
                         <option value="">Todos os contratos</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label for="statusFilter">Status</label>
-                    <select id="statusFilter">
-                        <option value="">Todos os status</option>
-                        <option value="PENDING">Pendente</option>
-                        <option value="APPROVED">Aprovada</option>
-                        <option value="REJECTED">Rejeitada</option>
-                        <option value="DRAFT">Rascunho</option>
                     </select>
                 </div>
                 <div class="filter-group">
@@ -148,144 +135,31 @@
 
         <div class="table-section">
             <div class="table-header">
-                <h3><i class="fas fa-table"></i> Medições</h3>
+                <h3><i class="fas fa-table"></i> Histórico de Medições</h3>
                 <div class="table-info">
                     <span id="tableInfo">Mostrando 0 medições</span>
                 </div>
             </div>
             <div class="table-container">
-                <table id="measurementsTable">
+                <table id="measurementsTable" class="measurements-history-table">
                     <thead>
                         <tr>
-                            <th data-sort="id">
-                                ID
-                                <i class="fas fa-sort sort-icon"></i>
-                            </th>
-                            <th data-sort="contractNumber">
-                                Contrato
-                                <i class="fas fa-sort sort-icon"></i>
-                            </th>
-                            <th data-sort="companyName">
-                                Empresa
-                                <i class="fas fa-sort sort-icon"></i>
-                            </th>
-                            <th data-sort="supplierName">
-                                Fornecedor
-                                <i class="fas fa-sort sort-icon"></i>
-                            </th>
-                            <th data-sort="measurementDate">
-                                Data Medição
-                                <i class="fas fa-sort sort-icon"></i>
-                            </th>
-                            <th data-sort="period">
-                                Período
-                                <i class="fas fa-sort sort-icon"></i>
-                            </th>
-                            <th data-sort="totalLaborValue">
-                                Valor M.O.
-                                <i class="fas fa-sort sort-icon"></i>
-                            </th>
-                            <th data-sort="totalMaterialValue">
-                                Valor Material
-                                <i class="fas fa-sort sort-icon"></i>
-                            </th>
-                            <th data-sort="totalValue">
-                                Valor Total
-                                <i class="fas fa-sort sort-icon"></i>
-                            </th>
-                            <th data-sort="status">
-                                Status
-                                <i class="fas fa-sort sort-icon"></i>
-                            </th>
-                            <th>
-                                Ações
-                            </th>
+                            <th data-sort="measurementDate">Data</th>
+                            <th data-sort="measurementNumber">Nº Medição</th>
+                            <th data-sort="period">Período</th>
+                            <th data-sort="type">Tipo</th>
+                            <th data-sort="totalValue">Valor</th>
+                            <th data-sort="totalLaborValue">Mão de Obra</th>
+                            <th data-sort="totalMaterialValue">Material</th>
+                            <th data-sort="retentionValue">Caução</th>
+                            <th data-sort="liquidValue">Valor Líquido</th>
+                            <th>Ações</th>
                         </tr>
                     </thead>
                     <tbody>
                         <!-- Data will be loaded here -->
                     </tbody>
                 </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal de Nova/Editar Medição -->
-    <div class="modal-overlay" id="measurementModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3><i class="fas fa-ruler-combined"></i> <span id="modalTitle">Nova Medição</span></h3>
-                <button class="modal-close" id="closeMeasurementModal">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form id="measurementForm">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="modalContractSelect">Contrato *</label>
-                            <select id="modalContractSelect" required>
-                                <option value="">Selecione um contrato</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="modalMeasurementDate">Data da Medição *</label>
-                            <input type="date" id="modalMeasurementDate" required>
-                        </div>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="modalPeriodFrom">Período - De</label>
-                            <input type="date" id="modalPeriodFrom">
-                        </div>
-                        <div class="form-group">
-                            <label for="modalPeriodTo">Período - Até</label>
-                            <input type="date" id="modalPeriodTo">
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="modalLaborValue">Valor Mão de Obra</label>
-                            <input type="number" id="modalLaborValue" step="0.01" min="0">
-                        </div>
-                        <div class="form-group">
-                            <label for="modalMaterialValue">Valor Material</label>
-                            <input type="number" id="modalMaterialValue" step="0.01" min="0">
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="modalStatus">Status</label>
-                            <select id="modalStatus">
-                                <option value="DRAFT">Rascunho</option>
-                                <option value="PENDING">Pendente</option>
-                                <option value="APPROVED">Aprovada</option>
-                                <option value="REJECTED">Rejeitada</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="modalTotalValue">Valor Total</label>
-                            <input type="number" id="modalTotalValue" step="0.01" min="0" readonly>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="modalDescription">Descrição/Observações</label>
-                        <textarea id="modalDescription" rows="3" placeholder="Descrição da medição..."></textarea>
-                    </div>
-
-                    <div class="form-actions">
-                        <button type="button" id="cancelMeasurement" class="btn-cancel">
-                            <i class="fas fa-times"></i> Cancelar
-                        </button>
-                        <button type="submit" id="saveMeasurement" class="btn-save">
-                            <i class="fas fa-save"></i> Salvar
-                        </button>
-                    </div>
-                </form>
             </div>
         </div>
     </div>
@@ -307,22 +181,6 @@
         </div>
     </div>
 
-    <!-- Modal de Histórico do Contrato -->
-    <div class="modal-overlay" id="contractHistoryModal">
-        <div class="modal-content modal-large">
-            <div class="modal-header">
-                <h3><i class="fas fa-history"></i> Histórico de Medições</h3>
-                <button class="modal-close" id="closeContractHistoryModal">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div id="contractHistoryContent">
-                    <!-- Content will be populated dynamically -->
-                </div>
-            </div>
-        </div>
-    </div>
     <div class="toast-container" id="toastContainer"></div>
 
     <script src="/measurements.js"></script>
