@@ -643,16 +643,6 @@ class MeasurementsPortal {
         this.renderTable();
     }
 
-    clearFilters() {
-        this.contractFilter.value = "";
-        this.companyFilter.value = "";
-        this.supplierFilter.value = "";
-        this.dateFromFilter.value = "";
-        this.dateToFilter.value = "";
-        
-        this.applyFilters();
-        this.showToast('Filtros limpos com sucesso!');
-    }
 
     toggleFilters() {
         this.filtersCollapsed = !this.filtersCollapsed;
