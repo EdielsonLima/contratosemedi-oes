@@ -9,51 +9,172 @@ import fs from 'fs';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Caminho para o arquivo de dados dos anexos
+// Caminhos para arquivos de dados dos anexos (múltiplas estratégias)
 const ATTACHMENTS_FILE = path.join(__dirname, 'attachments.json');
+const ATTACHMENTS_BACKUP_FILE = path.join(__dirname, 'attachments_backup.json');
+const ATTACHMENTS_DIR = path.join(__dirname, 'attachments_data');
 
-// Carregar anexos do arquivo
+// Garantir que o diretório existe
+if (!fs.existsSync(ATTACHMENTS_DIR)) {
+    fs.mkdirSync(ATTACHMENTS_DIR, { recursive: true });
+    console.log('📁 Diretório de anexos criado:', ATTACHMENTS_DIR);
+}
+
+// Carregar anexos com múltiplas estratégias
 function loadAttachments() {
-    console.log('🔄 Carregando anexos do arquivo:', ATTACHMENTS_FILE);
+    console.log('🔄 Iniciando carregamento de anexos...');
+    console.log('📂 Arquivo principal:', ATTACHMENTS_FILE);
+    console.log('📂 Arquivo backup:', ATTACHMENTS_BACKUP_FILE);
+    console.log('📂 Diretório:', ATTACHMENTS_DIR);
+    
     try {
+        // Estratégia 1: Tentar carregar do arquivo principal
         if (fs.existsSync(ATTACHMENTS_FILE)) {
+            console.log('✅ Arquivo principal encontrado');
             const data = fs.readFileSync(ATTACHMENTS_FILE, 'utf8');
-            const parsed = JSON.parse(data);
-            console.log('📁 Dados carregados:', {
-                attachments: Object.keys(parsed.attachments || {}).length,
-                counter: parsed.counter
+            if (data.trim()) {
+                const parsed = JSON.parse(data);
+                console.log('📁 Dados carregados do arquivo principal:', {
+                    attachments: Object.keys(parsed.attachments || {}).length,
+                    counter: parsed.counter
+                });
+                return {
+                    attachments: new Map(Object.entries(parsed.attachments || {})),
+                    counter: parsed.counter || 1
+                };
+            }
+        }
+        
+        // Estratégia 2: Tentar carregar do backup
+        if (fs.existsSync(ATTACHMENTS_BACKUP_FILE)) {
+            console.log('✅ Arquivo backup encontrado');
+            const data = fs.readFileSync(ATTACHMENTS_BACKUP_FILE, 'utf8');
+            if (data.trim()) {
+                const parsed = JSON.parse(data);
+                console.log('📁 Dados carregados do backup:', {
+                    attachments: Object.keys(parsed.attachments || {}).length,
+                    counter: parsed.counter
+                });
+                return {
+                    attachments: new Map(Object.entries(parsed.attachments || {})),
+                    counter: parsed.counter || 1
+                };
+            }
+        }
+        
+        // Estratégia 3: Carregar arquivos individuais do diretório
+        const files = fs.readdirSync(ATTACHMENTS_DIR).filter(f => f.endsWith('.json'));
+        if (files.length > 0) {
+            console.log(`✅ Encontrados ${files.length} arquivos individuais`);
+            const attachments = new Map();
+            let maxId = 0;
+            
+            files.forEach(file => {
+                try {
+                    const filePath = path.join(ATTACHMENTS_DIR, file);
+                    const data = fs.readFileSync(filePath, 'utf8');
+                    const attachment = JSON.parse(data);
+                    attachments.set(attachment.id, attachment);
+                    maxId = Math.max(maxId, attachment.id);
+                    console.log(`📄 Carregado: ${file} (ID: ${attachment.id})`);
+                } catch (error) {
+                    console.error(`❌ Erro ao carregar ${file}:`, error.message);
+                }
             });
+            
+            console.log('📁 Dados carregados de arquivos individuais:', {
+                attachments: attachments.size,
+                counter: maxId + 1
+            });
+            
             return {
-                attachments: new Map(Object.entries(parsed.attachments || {})),
-                counter: parsed.counter || 1
+                attachments,
+                counter: maxId + 1
             };
         }
-        console.log('📁 Arquivo não existe, criando estrutura vazia');
+        
+        console.log('📁 Nenhum arquivo encontrado, criando estrutura vazia');
     } catch (error) {
-        console.error('Erro ao carregar anexos:', error);
+        console.error('❌ Erro ao carregar anexos:', error);
     }
+    
     return {
         attachments: new Map(),
         counter: 1
     };
 }
 
-// Salvar anexos no arquivo
+// Salvar anexos com múltiplas estratégias
 function saveAttachments() {
-    console.log('💾 Salvando anexos no arquivo...');
+    console.log('💾 Iniciando salvamento de anexos...');
+    
     try {
         const data = {
             attachments: Object.fromEntries(attachmentsDB),
             counter: attachmentIdCounter
         };
-        console.log('💾 Dados a serem salvos:', {
+        
+        const jsonData = JSON.stringify(data, null, 2);
+        
+        console.log('💾 Dados para salvar:', {
             attachments: Object.keys(data.attachments).length,
-            counter: data.counter
+            counter: data.counter,
+            size: `${(jsonData.length / 1024).toFixed(2)} KB`
         });
-        fs.writeFileSync(ATTACHMENTS_FILE, JSON.stringify(data, null, 2));
-        console.log('✅ Anexos salvos com sucesso no arquivo');
+        
+        // Estratégia 1: Salvar no arquivo principal
+        try {
+            fs.writeFileSync(ATTACHMENTS_FILE, jsonData);
+            console.log('✅ Salvo no arquivo principal');
+        } catch (error) {
+            console.error('❌ Erro ao salvar arquivo principal:', error.message);
+        }
+        
+        // Estratégia 2: Salvar no backup
+        try {
+            fs.writeFileSync(ATTACHMENTS_BACKUP_FILE, jsonData);
+            console.log('✅ Salvo no arquivo backup');
+        } catch (error) {
+            console.error('❌ Erro ao salvar backup:', error.message);
+        }
+        
+        // Estratégia 3: Salvar arquivos individuais
+        try {
+            // Limpar diretório primeiro
+            const existingFiles = fs.readdirSync(ATTACHMENTS_DIR).filter(f => f.endsWith('.json'));
+            existingFiles.forEach(file => {
+                fs.unlinkSync(path.join(ATTACHMENTS_DIR, file));
+            });
+            
+            // Salvar cada anexo individualmente
+            for (const [id, attachment] of attachmentsDB.entries()) {
+                const fileName = `attachment_${id}.json`;
+                const filePath = path.join(ATTACHMENTS_DIR, fileName);
+                fs.writeFileSync(filePath, JSON.stringify(attachment, null, 2));
+            }
+            console.log(`✅ Salvos ${attachmentsDB.size} arquivos individuais`);
+        } catch (error) {
+            console.error('❌ Erro ao salvar arquivos individuais:', error.message);
+        }
+        
+        // Verificar se pelo menos uma estratégia funcionou
+        const mainExists = fs.existsSync(ATTACHMENTS_FILE);
+        const backupExists = fs.existsSync(ATTACHMENTS_BACKUP_FILE);
+        const individualFiles = fs.readdirSync(ATTACHMENTS_DIR).filter(f => f.endsWith('.json')).length;
+        
+        console.log('📊 Status do salvamento:', {
+            arquivoPrincipal: mainExists,
+            arquivoBackup: backupExists,
+            arquivosIndividuais: individualFiles
+        });
+        
+        if (!mainExists && !backupExists && individualFiles === 0) {
+            throw new Error('Nenhuma estratégia de salvamento funcionou!');
+        }
+        
     } catch (error) {
-        console.error('Erro ao salvar anexos:', error);
+        console.error('❌ ERRO CRÍTICO ao salvar anexos:', error);
+        throw error;
     }
 }
 
@@ -188,17 +309,33 @@ app.get('/api/contracts', async (req, res) => {
 app.get('/api/contracts/:contractNumber/attachments', async (req, res) => {
     try {
         const { contractNumber } = req.params;
-        console.log(`🔍 Buscando anexos para contrato ${contractNumber}`);
+        console.log(`\n🔍 === BUSCANDO ANEXOS ===`);
+        console.log(`🔍 Contrato: ${contractNumber}`);
         console.log(`🔍 Total de anexos no sistema: ${attachmentsDB.size}`);
+        
+        // Debug: listar todos os anexos
+        if (attachmentsDB.size > 0) {
+            console.log(`🔍 Anexos disponíveis:`);
+            for (const [id, attachment] of attachmentsDB.entries()) {
+                console.log(`  - ID ${id}: ${attachment.fileName} (Contrato: ${attachment.contractNumber})`);
+            }
+        }
         
         const attachments = Array.from(attachmentsDB.values())
             .filter(attachment => attachment.contractNumber === contractNumber)
             .map(({ fileData, ...attachment }) => attachment); // Remove fileData da resposta
         
         console.log(`🔍 Encontrados ${attachments.length} anexos para contrato ${contractNumber}`);
+        if (attachments.length > 0) {
+            attachments.forEach(att => {
+                console.log(`  - ${att.fileName} (ID: ${att.id}, Upload: ${att.uploadDate})`);
+            });
+        }
+        console.log(`🔍 === FIM DA BUSCA ===\n`);
+        
         res.json(attachments);
     } catch (error) {
-        console.error('Erro ao buscar anexos:', error);
+        console.error('❌ Erro ao buscar anexos:', error);
         res.status(500).json({ error: 'Erro ao buscar anexos' });
     }
 });
@@ -209,9 +346,14 @@ app.post('/api/contracts/:contractNumber/attachments', async (req, res) => {
         const { contractNumber } = req.params;
         const { fileName, fileData, fileSize } = req.body;
         
-        console.log(`📎 Recebendo anexo para contrato ${contractNumber}: ${fileName}`);
+        console.log(`\n📎 === INICIANDO UPLOAD DE ANEXO ===`);
+        console.log(`📎 Contrato: ${contractNumber}`);
+        console.log(`📎 Arquivo: ${fileName}`);
+        console.log(`📎 Tamanho: ${fileSize} bytes`);
+        console.log(`📎 Estado atual: ${attachmentsDB.size} anexos, próximo ID: ${attachmentIdCounter}`);
         
         if (!fileName || !fileData) {
+            console.log(`❌ Dados inválidos recebidos`);
             return res.status(400).json({ error: 'Nome do arquivo e dados são obrigatórios' });
         }
         
@@ -225,12 +367,42 @@ app.post('/api/contracts/:contractNumber/attachments', async (req, res) => {
         };
         
         console.log(`📎 Criando anexo com ID ${attachment.id}`);
+        console.log(`📎 Data de upload: ${attachment.uploadDate}`);
+        
+        // Adicionar ao Map
         attachmentsDB.set(attachment.id, attachment);
-        console.log(`📎 Anexo adicionado ao Map. Total: ${attachmentsDB.size}`);
+        console.log(`📎 Anexo adicionado ao Map. Total atual: ${attachmentsDB.size}`);
         
-        saveAttachments(); // Salvar no arquivo
+        // Verificar se foi adicionado corretamente
+        const verificacao = attachmentsDB.get(attachment.id);
+        if (!verificacao) {
+            console.log(`❌ ERRO: Anexo não foi adicionado ao Map!`);
+            return res.status(500).json({ error: 'Erro interno: anexo não foi adicionado' });
+        }
+        console.log(`✅ Verificação: anexo está no Map`);
         
-        console.log(`✅ Anexo salvo: ${fileName} para contrato ${contractNumber} (ID: ${attachment.id})`);
+        // Salvar nos arquivos
+        console.log(`💾 Iniciando salvamento...`);
+        try {
+            saveAttachments();
+            console.log(`✅ Salvamento concluído com sucesso`);
+        } catch (saveError) {
+            console.log(`❌ ERRO no salvamento:`, saveError.message);
+            // Mesmo com erro de salvamento, manter no Map para esta sessão
+        }
+        
+        // Verificar se os arquivos foram criados
+        const mainExists = fs.existsSync(ATTACHMENTS_FILE);
+        const backupExists = fs.existsSync(ATTACHMENTS_BACKUP_FILE);
+        console.log(`📊 Arquivos após salvamento:`, {
+            principal: mainExists,
+            backup: backupExists
+        });
+        
+        console.log(`✅ === UPLOAD CONCLUÍDO ===`);
+        console.log(`✅ Anexo: ${fileName}`);
+        console.log(`✅ ID: ${attachment.id}`);
+        console.log(`✅ Total de anexos: ${attachmentsDB.size}\n`);
         
         res.json({ 
             id: attachment.id,
@@ -238,7 +410,7 @@ app.post('/api/contracts/:contractNumber/attachments', async (req, res) => {
         });
         
     } catch (error) {
-        console.error('Erro ao salvar anexo:', error);
+        console.error('❌ ERRO CRÍTICO ao salvar anexo:', error);
         res.status(500).json({ error: 'Erro ao salvar anexo' });
     }
 });
