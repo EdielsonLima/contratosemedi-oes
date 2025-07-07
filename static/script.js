@@ -106,7 +106,7 @@ class ContractPortal {
             console.error("Erro ao buscar contratos:", error);
             this.showToast(`Erro ao carregar dados: ${error.message}`, 'error');
             this.contractsTableBody.innerHTML = `
-                <tr><td colspan="12" class="text-center">
+                <tr><td colspan="11" class="text-center">
                     <i class="fas fa-exclamation-triangle"></i> 
                     Erro ao carregar dados: ${error.message}
                 </td></tr>
@@ -309,11 +309,6 @@ class ContractPortal {
             // Contract Number
             row.insertCell().textContent = contract.contractNumber;
             
-            // Status with enhanced styling - CORRIGIDO
-            const statusCell = row.insertCell();
-            const statusClass = this.getStatusClass(contract.status);
-            statusCell.innerHTML = `<span class="status-cell ${statusClass}">${contract.status}</span>`;
-            
             // Company and Supplier
             row.insertCell().textContent = contract.companyName;
             row.insertCell().textContent = contract.supplierName;
@@ -330,12 +325,6 @@ class ContractPortal {
             const diasCell = row.insertCell();
             diasCell.innerHTML = `<span class="${expirationDisplay.class}">${expirationDisplay.icon} ${expirationDisplay.text}</span>`;
             
-            // Valor Total - MOVIDO PARA DEPOIS DE DIAS
-            const totalValue = parseFloat(contract.valorTotal) || 0;
-            row.insertCell().textContent = totalValue.toLocaleString("pt-BR", { 
-                style: "currency", currency: "BRL" 
-            });
-            
             // Values
             const laborValue = parseFloat(contract.totalLaborValue) || 0;
             const materialValue = parseFloat(contract.totalMaterialValue) || 0;
@@ -344,6 +333,12 @@ class ContractPortal {
                 style: "currency", currency: "BRL" 
             });
             row.insertCell().textContent = materialValue.toLocaleString("pt-BR", { 
+                style: "currency", currency: "BRL" 
+            });
+            
+            // Valor Total - MOVIDO PARA ANTES DE VALOR MEDIDO
+            const totalValue = parseFloat(contract.valorTotal) || 0;
+            row.insertCell().textContent = totalValue.toLocaleString("pt-BR", { 
                 style: "currency", currency: "BRL" 
             });
             
@@ -376,6 +371,11 @@ class ContractPortal {
                 balanceCell.style.color = '#28a745'; // Verde para saldo positivo
                 balanceCell.style.fontWeight = '600';
             }
+            
+            // Status with enhanced styling - MOVIDO PARA O FINAL
+            const statusCell = row.insertCell();
+            const statusClass = this.getStatusClass(contract.status);
+            statusCell.innerHTML = `<span class="status-cell ${statusClass}">${contract.status}</span>`;
         });
 
         this.tableInfo.textContent = `Mostrando ${this.filteredContracts.length} contratos`;
@@ -488,17 +488,17 @@ class ContractPortal {
 
         const headers = [
             'Nº Contrato',
-            'Status',
             'Empresa',
             'Fornecedor',
             'Início',
             'Dias',
-            'Situação de Vencimento',
-            'Valor Total',
             'Valor Mão de Obra',
             'Valor Material',
+            'Valor Total',
             'Valor Medido',
-            'Saldo'
+            'Saldo',
+            'Status',
+            'Situação de Vencimento'
         ];
 
         const csvContent = [
@@ -509,17 +509,17 @@ class ContractPortal {
                 
                 return [
                     `"${contract.contractNumber}"`,
-                    `"${contract.status}"`,
                     `"${contract.companyName}"`,
                     `"${contract.supplierName}"`,
                     `"${new Date(contract.startDate).toLocaleDateString('pt-BR')}"`,
                     daysToExpiration,
-                    `"${expirationDisplay.text}"`,
-                    parseFloat(contract.valorTotal) || 0,
                     parseFloat(contract.totalLaborValue) || 0,
                     parseFloat(contract.totalMaterialValue) || 0,
+                    parseFloat(contract.valorTotal) || 0,
                     parseFloat(contract.valorMedido) || 0,
-                    parseFloat(contract.saldoContrato) || 0
+                    parseFloat(contract.saldoContrato) || 0,
+                    `"${contract.status}"`,
+                    `"${expirationDisplay.text}"`
                 ].join(',');
             })
         ].join('\n');
