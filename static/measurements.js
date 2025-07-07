@@ -433,49 +433,17 @@ class MeasurementsPortal {
 
     clearFilters() {
         this.companyFilter.value = "";
-        this.supplierFilter.value = "";
-        this.contractFilter.value = "";
-        this.dateFromFilter.value = "";
-        this.dateToFilter.value = "";
+
+    toggleFilters() {
+        this.filtersCollapsed = !this.filtersCollapsed;
         
-        // Reset all filter options to initial state
-        this.populateFilters();
-        
-        this.applyFilters();
-        this.showToast('Filtros limpos com sucesso!');
-    }
-            const option = document.createElement("option");
-            option.value = supplier;
-            option.textContent = supplier;
-            this.supplierFilter.appendChild(option);
-        });
-    }
-
-    applyFilters() {
-        const selectedContract = this.contractFilter.value;
-        const selectedCompany = this.companyFilter.value;
-        const selectedSupplier = this.supplierFilter.value;
-        const dateFrom = this.dateFromFilter.value;
-        const dateTo = this.dateToFilter.value;
-
-        this.filteredMeasurements = this.allMeasurements.filter(measurement => {
-            const matchesContract = selectedContract ? measurement.contractNumber === selectedContract : true;
-            const matchesCompany = selectedCompany ? measurement.companyName === selectedCompany : true;
-            const matchesSupplier = selectedSupplier ? measurement.supplierName === selectedSupplier : true;
-            
-            let matchesDateRange = true;
-            if (dateFrom) {
-                matchesDateRange = matchesDateRange && measurement.measurementDate >= dateFrom;
-            }
-            if (dateTo) {
-                matchesDateRange = matchesDateRange && measurement.measurementDate <= dateTo;
-            }
-            
-            return matchesContract && matchesCompany && matchesSupplier && matchesDateRange;
-        });
-
-        this.renderTable();
-        this.updateStats();
+        if (this.filtersCollapsed) {
+            this.filtersContainer.classList.add('collapsed');
+            this.toggleFiltersButton.innerHTML = '<i class="fas fa-chevron-down"></i>';
+        } else {
+            this.filtersContainer.classList.remove('collapsed');
+            this.toggleFiltersButton.innerHTML = '<i class="fas fa-chevron-up"></i>';
+        }
     }
 
     renderTable() {
