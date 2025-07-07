@@ -407,7 +407,7 @@ class ContractPortal {
         
         if (this.filteredContracts.length === 0) {
             this.contractsTableBody.innerHTML = `
-                <tr><td colspan="12" class="text-center">
+                <tr><td colspan="13" class="text-center">
                     <i class="fas fa-search"></i> 
                     Nenhum contrato encontrado com os filtros aplicados.
                 </td></tr>
