@@ -293,6 +293,9 @@ body {
     font-weight: 600;
     color: var(--dark-color);
     font-size: 0.85em;
+    display: flex;
+    align-items: center;
+    gap: 5px;
 }
 
 .filter-group input,
@@ -310,6 +313,23 @@ body {
     outline: none;
     border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* Estilo especial para o filtro de vencimento */
+#expirationFilter {
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    border: 2px solid #e9ecef;
+    font-weight: 500;
+}
+
+#expirationFilter:focus {
+    border-color: var(--warning-color);
+    box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.1);
+}
+
+#expirationFilter option {
+    padding: 8px;
+    font-weight: 500;
 }
 
 .filter-actions {
@@ -559,32 +579,44 @@ table td {
     border: 1px solid rgba(108, 117, 125, 0.3);
 }
 
-/* Days to expiration styling */
+/* Days to expiration styling - Melhorado com ícones */
 .days-expired { 
     color: var(--danger-color); 
     font-weight: 600;
     background: rgba(220, 53, 69, 0.1);
-    padding: 3px 6px;
-    border-radius: 10px;
+    padding: 4px 8px;
+    border-radius: 12px;
     font-size: 0.8em;
+    border: 1px solid rgba(220, 53, 69, 0.3);
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
 }
 
 .days-expiring { 
     color: #856404; 
     font-weight: 600;
     background: rgba(255, 193, 7, 0.1);
-    padding: 3px 6px;
-    border-radius: 10px;
+    padding: 4px 8px;
+    border-radius: 12px;
     font-size: 0.8em;
+    border: 1px solid rgba(255, 193, 7, 0.3);
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
 }
 
 .days-future { 
     color: var(--success-color); 
     font-weight: 600;
     background: rgba(40, 167, 69, 0.1);
-    padding: 3px 6px;
-    border-radius: 10px;
+    padding: 4px 8px;
+    border-radius: 12px;
     font-size: 0.8em;
+    border: 1px solid rgba(40, 167, 69, 0.3);
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
 }
 
 /* Toast Notifications */
@@ -645,7 +677,7 @@ table td {
     }
     
     .filters {
-        grid-template-columns: repeat(5, 1fr);
+        grid-template-columns: repeat(6, 1fr);
         gap: 20px;
     }
     
@@ -702,7 +734,7 @@ table td {
     }
     
     .filters {
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        grid-template-columns: repeat(3, 1fr);
         gap: 12px;
         padding: 15px;
     }
@@ -1006,7 +1038,7 @@ table td {
     }
     
     .filters {
-        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+        grid-template-columns: repeat(3, 1fr);
     }
     
     table {

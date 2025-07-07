@@ -107,13 +107,17 @@
                     </select>
                 </div>
                 <div class="filter-group">
-                    <label for="dateRangeFilter">Período de Vencimento</label>
-                    <select id="dateRangeFilter">
-                        <option value="">Todos os períodos</option>
-                        <option value="expired">Vencidos</option>
-                        <option value="expiring-30">Vencem em 30 dias</option>
-                        <option value="expiring-60">Vencem em 60 dias</option>
-                        <option value="future">Futuros</option>
+                    <label for="expirationFilter"><i class="fas fa-calendar-times"></i> Situação de Vencimento</label>
+                    <select id="expirationFilter">
+                        <option value="">Todas as situações</option>
+                        <option value="expired">🔴 Vencidos</option>
+                        <option value="expiring-today">⚠️ Vencem hoje</option>
+                        <option value="expiring-7">🟡 Vencem em 7 dias</option>
+                        <option value="expiring-15">🟠 Vencem em 15 dias</option>
+                        <option value="expiring-30">🟡 Vencem em 30 dias</option>
+                        <option value="expiring-60">🔵 Vencem em 60 dias</option>
+                        <option value="expiring-90">🔵 Vencem em 90 dias</option>
+                        <option value="future">🟢 Futuros (+ de 90 dias)</option>
                     </select>
                 </div>
                 <div class="filter-actions">

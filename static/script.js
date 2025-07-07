@@ -28,7 +28,7 @@ class ContractPortal {
         this.companyFilter = document.getElementById("companyFilter");
         this.supplierFilter = document.getElementById("supplierFilter");
         this.contractNumberFilter = document.getElementById("contractNumberFilter");
-        this.dateRangeFilter = document.getElementById("dateRangeFilter");
+        this.expirationFilter = document.getElementById("expirationFilter");
         this.filtersContainer = document.getElementById("filtersContainer");
         
         // Button elements
@@ -48,7 +48,7 @@ class ContractPortal {
         this.companyFilter.addEventListener("change", () => this.applyFilters());
         this.supplierFilter.addEventListener("change", () => this.applyFilters());
         this.contractNumberFilter.addEventListener("input", () => this.applyFilters());
-        this.dateRangeFilter.addEventListener("change", () => this.applyFilters());
+        this.expirationFilter.addEventListener("change", () => this.applyFilters());
         
         // Button events
         this.clearFiltersButton.addEventListener("click", () => this.clearFilters());
@@ -153,12 +153,52 @@ class ContractPortal {
         });
     }
 
+    // Função para calcular dias até vencimento
+    getDaysToExpiration(endDate) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Zerar horas para comparação precisa
+        
+        const expiration = new Date(endDate);
+        expiration.setHours(0, 0, 0, 0);
+        
+        const diffTime = expiration - today;
+        return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    }
+
+    // Função para verificar se contrato atende ao filtro de vencimento
+    matchesExpirationFilter(contract, filterValue) {
+        if (!filterValue) return true;
+        
+        const daysToExpiration = this.getDaysToExpiration(contract.endDate);
+        
+        switch (filterValue) {
+            case 'expired':
+                return daysToExpiration < 0;
+            case 'expiring-today':
+                return daysToExpiration === 0;
+            case 'expiring-7':
+                return daysToExpiration >= 0 && daysToExpiration <= 7;
+            case 'expiring-15':
+                return daysToExpiration >= 0 && daysToExpiration <= 15;
+            case 'expiring-30':
+                return daysToExpiration >= 0 && daysToExpiration <= 30;
+            case 'expiring-60':
+                return daysToExpiration >= 0 && daysToExpiration <= 60;
+            case 'expiring-90':
+                return daysToExpiration >= 0 && daysToExpiration <= 90;
+            case 'future':
+                return daysToExpiration > 90;
+            default:
+                return true;
+        }
+    }
+
     applyFilters() {
         const selectedStatus = this.statusFilter.value;
         const selectedCompany = this.companyFilter.value;
         const selectedSupplier = this.supplierFilter.value;
         const contractNumberText = this.contractNumberFilter.value.toLowerCase();
-        const dateRange = this.dateRangeFilter.value;
+        const expirationFilter = this.expirationFilter.value;
 
         this.filteredContracts = this.allContracts.filter(contract => {
             const matchesStatus = selectedStatus ? contract.status === selectedStatus : true;
@@ -166,31 +206,10 @@ class ContractPortal {
             const matchesSupplier = selectedSupplier ? contract.supplierName === selectedSupplier : true;
             const matchesContractNumber = contractNumberText ? 
                 contract.contractNumber.toLowerCase().includes(contractNumberText) : true;
-            
-            let matchesDateRange = true;
-            if (dateRange) {
-                const endDate = new Date(contract.endDate);
-                const today = new Date();
-                const diffDays = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
-                
-                switch (dateRange) {
-                    case 'expired':
-                        matchesDateRange = diffDays < 0;
-                        break;
-                    case 'expiring-30':
-                        matchesDateRange = diffDays >= 0 && diffDays <= 30;
-                        break;
-                    case 'expiring-60':
-                        matchesDateRange = diffDays >= 0 && diffDays <= 60;
-                        break;
-                    case 'future':
-                        matchesDateRange = diffDays > 60;
-                        break;
-                }
-            }
+            const matchesExpiration = this.matchesExpirationFilter(contract, expirationFilter);
             
             return matchesStatus && matchesCompany && matchesSupplier && 
-                   matchesContractNumber && matchesDateRange;
+                   matchesContractNumber && matchesExpiration;
         });
 
         this.renderTable();
@@ -240,6 +259,41 @@ class ContractPortal {
         return statusMap[normalizedStatus] || 'status-default';
     }
 
+    // Função para obter classe e texto dos dias para vencimento
+    getExpirationDisplay(daysToExpiration) {
+        if (daysToExpiration < 0) {
+            return {
+                class: 'days-expired',
+                text: `${Math.abs(daysToExpiration)} dias vencido`,
+                icon: '🔴'
+            };
+        } else if (daysToExpiration === 0) {
+            return {
+                class: 'days-expiring',
+                text: 'Vence hoje',
+                icon: '⚠️'
+            };
+        } else if (daysToExpiration <= 7) {
+            return {
+                class: 'days-expiring',
+                text: `${daysToExpiration} dias restantes`,
+                icon: '🟡'
+            };
+        } else if (daysToExpiration <= 30) {
+            return {
+                class: 'days-expiring',
+                text: `${daysToExpiration} dias restantes`,
+                icon: '🟠'
+            };
+        } else {
+            return {
+                class: 'days-future',
+                text: `${daysToExpiration} dias restantes`,
+                icon: '🟢'
+            };
+        }
+    }
+
     renderTable() {
         this.contractsTableBody.innerHTML = "";
         
@@ -274,21 +328,12 @@ class ContractPortal {
             const endDate = new Date(contract.endDate);
             endDateCell.textContent = endDate.toLocaleDateString('pt-BR');
             
-            // Days to expiration with enhanced styling
-            const today = new Date();
-            const diffTime = endDate - today;
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            // Days to expiration with enhanced styling and icons
+            const daysToExpiration = this.getDaysToExpiration(contract.endDate);
+            const expirationDisplay = this.getExpirationDisplay(daysToExpiration);
             
             const diasCell = row.insertCell();
-            if (diffDays > 30) {
-                diasCell.innerHTML = `<span class="days-future">${diffDays} dias restantes</span>`;
-            } else if (diffDays > 0) {
-                diasCell.innerHTML = `<span class="days-expiring">${diffDays} dias restantes</span>`;
-            } else if (diffDays === 0) {
-                diasCell.innerHTML = `<span class="days-expiring">Vence hoje</span>`;
-            } else {
-                diasCell.innerHTML = `<span class="days-expired">${Math.abs(diffDays)} dias vencido</span>`;
-            }
+            diasCell.innerHTML = `<span class="${expirationDisplay.class}">${expirationDisplay.icon} ${expirationDisplay.text}</span>`;
             
             // Values
             const laborValue = parseFloat(contract.totalLaborValue) || 0;
@@ -330,11 +375,9 @@ class ContractPortal {
         this.totalSuppliersCard.textContent = uniqueSuppliers.size;
 
         // Expiring contracts (next 30 days)
-        const today = new Date();
         const expiringContracts = contracts.filter(contract => {
-            const endDate = new Date(contract.endDate);
-            const diffDays = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
-            return diffDays >= 0 && diffDays <= 30;
+            const daysToExpiration = this.getDaysToExpiration(contract.endDate);
+            return daysToExpiration >= 0 && daysToExpiration <= 30;
         });
         this.expiringContractsCard.textContent = expiringContracts.length;
     }
@@ -366,11 +409,8 @@ class ContractPortal {
                 aVal = new Date(aVal);
                 bVal = new Date(bVal);
             } else if (column === 'diasVencimento') {
-                const aDate = new Date(a.endDate);
-                const bDate = new Date(b.endDate);
-                const today = new Date();
-                aVal = Math.ceil((aDate - today) / (1000 * 60 * 60 * 24));
-                bVal = Math.ceil((bDate - today) / (1000 * 60 * 60 * 24));
+                aVal = this.getDaysToExpiration(a.endDate);
+                bVal = this.getDaysToExpiration(b.endDate);
             } else if (column.includes('Value') || column === 'valorTotal') {
                 aVal = parseFloat(aVal) || 0;
                 bVal = parseFloat(bVal) || 0;
@@ -392,7 +432,7 @@ class ContractPortal {
         this.companyFilter.value = "";
         this.supplierFilter.value = "";
         this.contractNumberFilter.value = "";
-        this.dateRangeFilter.value = "";
+        this.expirationFilter.value = "";
         
         this.applyFilters();
         this.showToast('Filtros limpos com sucesso!');
@@ -423,6 +463,7 @@ class ContractPortal {
             'Fornecedor',
             'Data de Vencimento',
             'Dias para Vencimento',
+            'Situação de Vencimento',
             'Valor Mão de Obra',
             'Valor Material',
             'Valor Total'
@@ -432,8 +473,8 @@ class ContractPortal {
             headers.join(','),
             ...this.filteredContracts.map(contract => {
                 const endDate = new Date(contract.endDate);
-                const today = new Date();
-                const diffDays = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
+                const daysToExpiration = this.getDaysToExpiration(contract.endDate);
+                const expirationDisplay = this.getExpirationDisplay(daysToExpiration);
                 
                 return [
                     `"${contract.contractNumber}"`,
@@ -441,7 +482,8 @@ class ContractPortal {
                     `"${contract.companyName}"`,
                     `"${contract.supplierName}"`,
                     `"${endDate.toLocaleDateString('pt-BR')}"`,
-                    diffDays,
+                    daysToExpiration,
+                    `"${expirationDisplay.text}"`,
                     parseFloat(contract.totalLaborValue) || 0,
                     parseFloat(contract.totalMaterialValue) || 0,
                     parseFloat(contract.valorTotal) || 0
