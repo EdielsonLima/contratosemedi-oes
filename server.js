@@ -226,7 +226,9 @@ function calculateMeasurementsData(contracts, measurements) {
     const measurementsByContract = {};
     
     measurements.forEach(measurement => {
-        const contractId = measurement.contractId;
+        // Tentar diferentes campos possíveis para o ID do contrato
+        const contractId = measurement.contractId || measurement.supplyContractId || measurement.contract_id || measurement.id;
+        
         if (!measurementsByContract[contractId]) {
             measurementsByContract[contractId] = [];
         }
@@ -234,10 +236,18 @@ function calculateMeasurementsData(contracts, measurements) {
     });
 
     console.log(`📋 Contratos com medições: ${Object.keys(measurementsByContract).length}`);
+    console.log(`🔍 IDs de contratos com medições:`, Object.keys(measurementsByContract).slice(0, 10));
+    
+    // Debug: mostrar estrutura de uma medição
+    if (measurements.length > 0) {
+        console.log(`🔍 Estrutura da primeira medição:`, JSON.stringify(measurements[0], null, 2));
+    }
     
     // Calcular valores para cada contrato
     const result = contracts.map(contract => {
-        const contractMeasurements = measurementsByContract[contract.id] || [];
+        // Tentar diferentes campos possíveis para o ID do contrato
+        const contractId = contract.id || contract.contractId || contract.contract_id;
+        const contractMeasurements = measurementsByContract[contractId] || [];
         
         // Calcular valor total medido
         const totalMeasuredValue = contractMeasurements.reduce((sum, measurement) => {
@@ -251,8 +261,8 @@ function calculateMeasurementsData(contracts, measurements) {
         const remainingBalance = contractTotalValue - totalMeasuredValue;
         
         // Debug para alguns contratos
-        if (contractMeasurements.length > 0) {
-            console.log(`📊 Contrato ${contract.contractNumber}: ${contractMeasurements.length} medições, Valor medido: R$ ${totalMeasuredValue.toFixed(2)}, Saldo: R$ ${remainingBalance.toFixed(2)}`);
+        if (contractMeasurements.length > 0 || contract.contractNumber === '10') {
+            console.log(`📊 Contrato ${contract.contractNumber} (ID: ${contractId}): ${contractMeasurements.length} medições, Valor medido: R$ ${totalMeasuredValue.toFixed(2)}, Saldo: R$ ${remainingBalance.toFixed(2)}`);
         }
         
         return {
@@ -262,6 +272,10 @@ function calculateMeasurementsData(contracts, measurements) {
             numeroMedicoes: contractMeasurements.length
         };
     });
+   
+   // Debug final
+   const contractsWithMeasurements = result.filter(c => c.numeroMedicoes > 0);
+   console.log(`✅ Processamento concluído: ${contractsWithMeasurements.length} contratos têm medições`);
    
    console.log(`✅ Processamento concluído`);
    return result;
