@@ -4,6 +4,10 @@ import fetch from 'node-fetch';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+// Simulação de banco de dados para anexos
+let attachmentsDB = new Map();
+let attachmentIdCounter = 1;
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -113,6 +117,98 @@ app.get('/api/contracts', async (req, res) => {
             error: `Erro ao buscar contratos: ${error.message}`,
             details: error.stack
         });
+    }
+});
+
+// Rota para buscar anexos de um contrato
+app.get('/api/contracts/:contractNumber/attachments', async (req, res) => {
+    try {
+        const { contractNumber } = req.params;
+        const attachments = Array.from(attachmentsDB.values())
+            .filter(attachment => attachment.contractNumber === contractNumber)
+            .map(({ fileData, ...attachment }) => attachment); // Remove fileData da resposta
+        
+        res.json(attachments);
+    } catch (error) {
+        console.error('Erro ao buscar anexos:', error);
+        res.status(500).json({ error: 'Erro ao buscar anexos' });
+    }
+});
+
+// Rota para enviar anexo
+app.post('/api/contracts/:contractNumber/attachments', async (req, res) => {
+    try {
+        const { contractNumber } = req.params;
+        const { fileName, fileData, fileSize } = req.body;
+        
+        if (!fileName || !fileData) {
+            return res.status(400).json({ error: 'Nome do arquivo e dados são obrigatórios' });
+        }
+        
+        const attachment = {
+            id: attachmentIdCounter++,
+            contractNumber,
+            fileName,
+            fileData, // Base64
+            fileSize,
+            uploadDate: new Date().toISOString()
+        };
+        
+        attachmentsDB.set(attachment.id, attachment);
+        
+        console.log(`📎 Anexo salvo: ${fileName} para contrato ${contractNumber}`);
+        
+        res.json({ 
+            id: attachment.id,
+            message: 'Anexo salvo com sucesso' 
+        });
+        
+    } catch (error) {
+        console.error('Erro ao salvar anexo:', error);
+        res.status(500).json({ error: 'Erro ao salvar anexo' });
+    }
+});
+
+// Rota para baixar anexo
+app.get('/api/attachments/:id/download', async (req, res) => {
+    try {
+        const attachmentId = parseInt(req.params.id);
+        const attachment = attachmentsDB.get(attachmentId);
+        
+        if (!attachment) {
+            return res.status(404).json({ error: 'Anexo não encontrado' });
+        }
+        
+        // Converter Base64 de volta para buffer
+        const buffer = Buffer.from(attachment.fileData, 'base64');
+        
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="${attachment.fileName}"`);
+        res.send(buffer);
+        
+    } catch (error) {
+        console.error('Erro ao baixar anexo:', error);
+        res.status(500).json({ error: 'Erro ao baixar anexo' });
+    }
+});
+
+// Rota para excluir anexo
+app.delete('/api/attachments/:id', async (req, res) => {
+    try {
+        const attachmentId = parseInt(req.params.id);
+        
+        if (attachmentsDB.has(attachmentId)) {
+            const attachment = attachmentsDB.get(attachmentId);
+            attachmentsDB.delete(attachmentId);
+            console.log(`🗑️ Anexo excluído: ${attachment.fileName}`);
+            res.json({ message: 'Anexo excluído com sucesso' });
+        } else {
+            res.status(404).json({ error: 'Anexo não encontrado' });
+        }
+        
+    } catch (error) {
+        console.error('Erro ao excluir anexo:', error);
+        res.status(500).json({ error: 'Erro ao excluir anexo' });
     }
 });
 
