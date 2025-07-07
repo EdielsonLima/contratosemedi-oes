@@ -894,7 +894,6 @@ class ContractPortal {
                     parseFloat(contract.valorTotal) || 0,
                     parseFloat(contract.valorMedido) || 0,
                     parseFloat(contract.saldoContrato) || 0,
-                    parseFloat(contract.retentionValue || contract.caucao || contract.retencao || contract.retention || 0),
                     `"${contract.status}"`,
                     `"${expirationDisplay.text}"`
                 ].join(',');
