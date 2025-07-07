@@ -269,12 +269,50 @@ body {
     color: var(--primary-color);
 }
 
+/* FILTROS - Layout responsivo melhorado */
 .filters {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 15px;
     padding: 20px;
     transition: var(--transition);
+    /* Grid responsivo que garante que todos os filtros sejam visíveis */
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+/* Ajustes específicos para diferentes tamanhos de tela */
+@media (min-width: 1600px) {
+    .filters {
+        grid-template-columns: repeat(5, 1fr); /* 5 colunas para telas muito grandes */
+        gap: 20px;
+    }
+}
+
+@media (min-width: 1200px) and (max-width: 1599px) {
+    .filters {
+        grid-template-columns: repeat(5, 1fr); /* 5 colunas para telas grandes */
+        gap: 18px;
+    }
+}
+
+@media (min-width: 992px) and (max-width: 1199px) {
+    .filters {
+        grid-template-columns: repeat(3, 1fr); /* 3 colunas para notebooks */
+        gap: 15px;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+    .filters {
+        grid-template-columns: repeat(2, 1fr); /* 2 colunas para tablets */
+        gap: 12px;
+    }
+}
+
+@media (max-width: 767px) {
+    .filters {
+        grid-template-columns: 1fr; /* 1 coluna para mobile */
+        gap: 10px;
+    }
 }
 
 .filters.collapsed {
@@ -306,6 +344,7 @@ body {
     font-size: 0.9em;
     transition: var(--transition);
     background: white;
+    width: 100%;
 }
 
 .filter-group input:focus,
@@ -335,6 +374,9 @@ body {
 .filter-actions {
     display: flex;
     align-items: end;
+    grid-column: 1 / -1; /* Ocupa toda a largura disponível */
+    justify-content: center;
+    margin-top: 10px;
 }
 
 .btn-clear {
@@ -676,11 +718,6 @@ table td {
         font-size: 1.4em;
     }
     
-    .filters {
-        grid-template-columns: repeat(6, 1fr);
-        gap: 20px;
-    }
-    
     table th:nth-child(3),
     table th:nth-child(4),
     table td:nth-child(3),
@@ -734,8 +771,6 @@ table td {
     }
     
     .filters {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 12px;
         padding: 15px;
     }
     
@@ -823,8 +858,6 @@ table td {
     }
     
     .filters {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
         padding: 12px;
     }
     
@@ -910,8 +943,6 @@ table td {
     }
     
     .filters {
-        grid-template-columns: 1fr;
-        gap: 8px;
         padding: 10px;
     }
     
@@ -1035,10 +1066,6 @@ table td {
 @media (max-width: 1366px) and (min-width: 1024px) {
     .stats-cards {
         grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-    }
-    
-    .filters {
-        grid-template-columns: repeat(3, 1fr);
     }
     
     table {
