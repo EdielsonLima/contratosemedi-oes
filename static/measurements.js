@@ -54,10 +54,10 @@ class MeasurementsPortal {
         // Navigation
         this.backButton.addEventListener("click", () => this.goBack());
         
-        // Filter events
+        // Filter events - Cascade filters
+        this.companyFilter.addEventListener("change", () => this.onCompanyChange());
+        this.supplierFilter.addEventListener("change", () => this.onSupplierChange());
         this.contractFilter.addEventListener("change", () => this.applyFilters());
-        this.companyFilter.addEventListener("change", () => this.applyFilters());
-        this.supplierFilter.addEventListener("change", () => this.applyFilters());
         this.dateFromFilter.addEventListener("change", () => this.applyFilters());
         this.dateToFilter.addEventListener("change", () => this.applyFilters());
         
@@ -286,23 +286,8 @@ class MeasurementsPortal {
     }
 
     populateFilters() {
-        // Clear existing options (except first)
-        [this.contractFilter, this.companyFilter, this.supplierFilter].forEach(select => {
-            while (select.children.length > 1) {
-                select.removeChild(select.lastChild);
-            }
-        });
-
-        // Populate contract filter
-        const contracts = [...new Set(this.allMeasurements.map(m => m.contractNumber))].sort();
-        contracts.forEach(contractNumber => {
-            const option = document.createElement("option");
-            option.value = contractNumber;
-            option.textContent = `Contrato ${contractNumber}`;
-            this.contractFilter.appendChild(option);
-        });
-
-        // Populate company filter - usar TODOS os contratos, não apenas medições
+        // Populate company filter - usar TODOS os contratos
+        this.clearFilterOptions(this.companyFilter);
         const companies = [...new Set(this.allContracts.map(c => c.companyName))].sort();
         companies.forEach(company => {
             const option = document.createElement("option");
@@ -311,9 +296,154 @@ class MeasurementsPortal {
             this.companyFilter.appendChild(option);
         });
 
-        // Populate supplier filter - usar TODOS os contratos, não apenas medições
-        const suppliers = [...new Set(this.allContracts.map(c => c.supplierName))].sort();
-        suppliers.forEach(supplier => {
+        // Initialize other filters as empty (will be populated by cascade)
+        this.clearFilterOptions(this.supplierFilter);
+        this.clearFilterOptions(this.contractFilter);
+    }
+
+    clearFilterOptions(selectElement) {
+        while (selectElement.children.length > 1) {
+            selectElement.removeChild(selectElement.lastChild);
+        }
+    }
+
+    onCompanyChange() {
+        const selectedCompany = this.companyFilter.value;
+        
+        // Clear and reset dependent filters
+        this.clearFilterOptions(this.supplierFilter);
+        this.clearFilterOptions(this.contractFilter);
+        this.supplierFilter.value = "";
+        this.contractFilter.value = "";
+        
+        if (selectedCompany) {
+            // Get suppliers for selected company
+            const suppliersForCompany = [...new Set(
+                this.allContracts
+                    .filter(c => c.companyName === selectedCompany)
+                    .map(c => c.supplierName)
+            )].sort();
+            
+            suppliersForCompany.forEach(supplier => {
+                const option = document.createElement("option");
+                option.value = supplier;
+                option.textContent = supplier;
+                this.supplierFilter.appendChild(option);
+            });
+        } else {
+            // If no company selected, show all suppliers
+            const allSuppliers = [...new Set(this.allContracts.map(c => c.supplierName))].sort();
+            allSuppliers.forEach(supplier => {
+                const option = document.createElement("option");
+                option.value = supplier;
+                option.textContent = supplier;
+                this.supplierFilter.appendChild(option);
+            });
+        }
+        
+        this.applyFilters();
+    }
+
+    onSupplierChange() {
+        const selectedCompany = this.companyFilter.value;
+        const selectedSupplier = this.supplierFilter.value;
+        
+        // Clear and reset contract filter
+        this.clearFilterOptions(this.contractFilter);
+        this.contractFilter.value = "";
+        
+        if (selectedSupplier) {
+            // Get contracts for selected company and supplier
+            let contractsForFilter = this.allContracts;
+            
+            if (selectedCompany) {
+                contractsForFilter = contractsForFilter.filter(c => c.companyName === selectedCompany);
+            }
+            
+            contractsForFilter = contractsForFilter.filter(c => c.supplierName === selectedSupplier);
+            
+            // Only show contracts that have measurements
+            const contractsWithMeasurements = [...new Set(
+                contractsForFilter
+                    .filter(c => this.allMeasurements.some(m => m.contractNumber === c.contractNumber))
+                    .map(c => c.contractNumber)
+            )].sort();
+            
+            contractsWithMeasurements.forEach(contractNumber => {
+                const option = document.createElement("option");
+                option.value = contractNumber;
+                option.textContent = `Contrato ${contractNumber}`;
+                this.contractFilter.appendChild(option);
+            });
+        } else if (selectedCompany) {
+            // If company selected but no supplier, show all contracts for that company that have measurements
+            const contractsForCompany = [...new Set(
+                this.allContracts
+                    .filter(c => c.companyName === selectedCompany)
+                    .filter(c => this.allMeasurements.some(m => m.contractNumber === c.contractNumber))
+                    .map(c => c.contractNumber)
+            )].sort();
+            
+            contractsForCompany.forEach(contractNumber => {
+                const option = document.createElement("option");
+                option.value = contractNumber;
+                option.textContent = `Contrato ${contractNumber}`;
+                this.contractFilter.appendChild(option);
+            });
+        } else {
+            // If no company or supplier selected, show all contracts with measurements
+            const allContractsWithMeasurements = [...new Set(this.allMeasurements.map(m => m.contractNumber))].sort();
+            allContractsWithMeasurements.forEach(contractNumber => {
+                const option = document.createElement("option");
+                option.value = contractNumber;
+                option.textContent = `Contrato ${contractNumber}`;
+                this.contractFilter.appendChild(option);
+            });
+        }
+        
+        this.applyFilters();
+    }
+
+    applyFilters() {
+        const selectedContract = this.contractFilter.value;
+        const selectedCompany = this.companyFilter.value;
+        const selectedSupplier = this.supplierFilter.value;
+        const dateFrom = this.dateFromFilter.value;
+        const dateTo = this.dateToFilter.value;
+
+        this.filteredMeasurements = this.allMeasurements.filter(measurement => {
+            const matchesContract = selectedContract ? measurement.contractNumber === selectedContract : true;
+            const matchesCompany = selectedCompany ? measurement.companyName === selectedCompany : true;
+            const matchesSupplier = selectedSupplier ? measurement.supplierName === selectedSupplier : true;
+            
+            let matchesDateRange = true;
+            if (dateFrom) {
+                matchesDateRange = matchesDateRange && measurement.measurementDate >= dateFrom;
+            }
+            if (dateTo) {
+                matchesDateRange = matchesDateRange && measurement.measurementDate <= dateTo;
+            }
+            
+            return matchesContract && matchesCompany && matchesSupplier && matchesDateRange;
+        });
+
+        this.renderTable();
+        this.updateStats();
+    }
+
+    clearFilters() {
+        this.companyFilter.value = "";
+        this.supplierFilter.value = "";
+        this.contractFilter.value = "";
+        this.dateFromFilter.value = "";
+        this.dateToFilter.value = "";
+        
+        // Reset all filter options to initial state
+        this.populateFilters();
+        
+        this.applyFilters();
+        this.showToast('Filtros limpos com sucesso!');
+    }
             const option = document.createElement("option");
             option.value = supplier;
             option.textContent = supplier;
