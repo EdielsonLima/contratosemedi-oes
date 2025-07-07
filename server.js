@@ -85,6 +85,29 @@ app.get('/api/contracts', async (req, res) => {
             const laborValue = parseFloat(contract.totalLaborValue || 0);
             const materialValue = parseFloat(contract.totalMaterialValue || 0);
             contract.valorTotal = laborValue + materialValue;
+            
+            // DEBUG: Verificar campos relacionados a caução/retenção nos contratos
+            if (allContracts.indexOf(contract) === 0) {
+                console.log('🔍 DEBUG CAUÇÃO/RETENÇÃO - PRIMEIRO CONTRATO:');
+                console.log('📋 Todos os campos:', Object.keys(contract));
+                
+                // Procurar campos que podem conter caução/retenção
+                const possibleCautionFields = Object.keys(contract).filter(key => 
+                    key.toLowerCase().includes('cauc') ||
+                    key.toLowerCase().includes('reten') ||
+                    key.toLowerCase().includes('guarantee') ||
+                    key.toLowerCase().includes('warranty') ||
+                    key.toLowerCase().includes('percent') ||
+                    key.toLowerCase().includes('rate')
+                );
+                
+                console.log('🎯 Campos possíveis para caução/retenção:', possibleCautionFields);
+                
+                // Mostrar valores desses campos
+                possibleCautionFields.forEach(field => {
+                    console.log(`   ${field}: ${contract[field]}`);
+                });
+            }
         });
 
         // Buscar medições para todos os contratos
@@ -321,6 +344,24 @@ function calculateMeasurementsData(contracts, measurements) {
     if (measurements.length > 0) {
         console.log(`🔍 Estrutura da primeira medição:`, JSON.stringify(measurements[0], null, 2));
         console.log(`🔍 Campos disponíveis na medição:`, Object.keys(measurements[0]));
+        
+        // DEBUG: Verificar campos relacionados a caução/retenção nas medições
+        console.log('🔍 DEBUG CAUÇÃO/RETENÇÃO - PRIMEIRA MEDIÇÃO:');
+        const possibleCautionFieldsMeasurement = Object.keys(measurements[0]).filter(key => 
+            key.toLowerCase().includes('cauc') ||
+            key.toLowerCase().includes('reten') ||
+            key.toLowerCase().includes('guarantee') ||
+            key.toLowerCase().includes('warranty') ||
+            key.toLowerCase().includes('deduct') ||
+            key.toLowerCase().includes('withhold')
+        );
+        
+        console.log('🎯 Campos possíveis para caução/retenção nas medições:', possibleCautionFieldsMeasurement);
+        
+        // Mostrar valores desses campos
+        possibleCautionFieldsMeasurement.forEach(field => {
+            console.log(`   ${field}: ${measurements[0][field]}`);
+        });
     }
     
     // Debug: mostrar estrutura de um contrato

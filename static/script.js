@@ -148,10 +148,32 @@ class ContractPortal {
             
             // DEBUG: Mostrar todos os campos do primeiro contrato
             if (this.allContracts.length > 0) {
-                console.log('🔍 CAMPOS DISPONÍVEIS NO PRIMEIRO CONTRATO:');
+                console.log('🔍 FRONTEND - CAMPOS DISPONÍVEIS NO PRIMEIRO CONTRATO:');
                 console.log(Object.keys(this.allContracts[0]));
-                console.log('📋 DADOS COMPLETOS DO PRIMEIRO CONTRATO:');
-                console.log(this.allContracts[0]);
+                
+                // Procurar especificamente campos de caução/retenção
+                const contract = this.allContracts[0];
+                const possibleCautionFields = Object.keys(contract).filter(key => 
+                    key.toLowerCase().includes('cauc') ||
+                    key.toLowerCase().includes('reten') ||
+                    key.toLowerCase().includes('guarantee') ||
+                    key.toLowerCase().includes('warranty') ||
+                    key.toLowerCase().includes('percent') ||
+                    key.toLowerCase().includes('rate') ||
+                    key.toLowerCase().includes('deduct') ||
+                    key.toLowerCase().includes('withhold')
+                );
+                
+                console.log('🎯 FRONTEND - Campos possíveis para caução/retenção:', possibleCautionFields);
+                
+                if (possibleCautionFields.length > 0) {
+                    console.log('📊 FRONTEND - Valores encontrados:');
+                    possibleCautionFields.forEach(field => {
+                        console.log(`   ${field}: ${contract[field]}`);
+                    });
+                } else {
+                    console.log('❌ FRONTEND - Nenhum campo de caução/retenção encontrado nos contratos');
+                }
             }
             
             this.populateFilters();
