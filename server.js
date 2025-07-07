@@ -212,7 +212,7 @@ app.delete('/api/attachments/:id', async (req, res) => {
 });
 
 // Servir arquivos estáticos
-app.use(express.static(path.join(__dirname, 'static')));
+app.use('/static', express.static(path.join(__dirname, 'static')));
 
 // Rota para a página de medições
 app.get('/measurements', (req, res) => {
@@ -223,7 +223,6 @@ app.get('/measurements', (req, res) => {
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'static', 'index.html'));
 });
-
 
 app.listen(PORT, () => {
     console.log(`🚀 Servidor rodando na porta ${PORT}`);
