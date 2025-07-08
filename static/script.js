@@ -16,7 +16,6 @@ class ContractPortal {
         this.totalContractsCard = document.getElementById("totalContracts");
         this.totalValueCard = document.getElementById("totalValue");
         this.totalMeasuredCard = document.getElementById("totalMeasured");
-        this.totalCautionCard = document.getElementById("totalCaution");
         this.totalCompaniesCard = document.getElementById("totalCompanies");
         this.totalSuppliersCard = document.getElementById("totalSuppliers");
         this.expiringContractsCard = document.getElementById("expiringContracts");
@@ -467,18 +466,6 @@ class ContractPortal {
                 console.log(`🔍 FRONTEND - Contrato ${contract.contractNumber} objeto completo:`, contract);
             }
             
-            retentionCell.textContent = retentionValue.toLocaleString("pt-BR", { 
-                style: "currency", currency: "BRL" 
-            });
-            
-            // Colorir caução
-            if (retentionValue > 0) {
-                retentionCell.style.color = '#dc3545'; // Vermelho para caução
-                retentionCell.style.fontWeight = '600';
-            } else {
-                retentionCell.style.color = '#6c757d'; // Cinza para sem caução
-            }
-            
             // Status with enhanced styling - MOVIDO PARA O FINAL
             const statusCell = row.insertCell();
             const statusClass = this.getStatusClass(contract.status);
@@ -749,11 +736,6 @@ class ContractPortal {
             style: "currency", currency: "BRL" 
         });
 
-        // Total caution value
-        const totalCaution = contracts.reduce((sum, c) => sum + (parseFloat(c.retentionValue) || 0), 0);
-        this.totalCautionCard.textContent = totalCaution.toLocaleString("pt-BR", { 
-            style: "currency", currency: "BRL" 
-        });
 
         // Unique companies
         const uniqueCompanies = new Set(contracts.map(c => c.companyName));
@@ -804,9 +786,6 @@ class ContractPortal {
                 aVal = parseFloat(aVal) || 0;
                 bVal = parseFloat(bVal) || 0;
             } else if (column === 'valorMedido' || column === 'saldoContrato') {
-                aVal = parseFloat(aVal) || 0;
-                bVal = parseFloat(bVal) || 0;
-            } else if (column === 'retentionValue') {
                 aVal = parseFloat(aVal) || 0;
                 bVal = parseFloat(bVal) || 0;
             } else {
@@ -883,7 +862,6 @@ class ContractPortal {
                     parseFloat(contract.totalMaterialValue) || 0,
                     parseFloat(contract.valorTotal) || 0,
                     parseFloat(contract.valorMedido) || 0,
-                    parseFloat(contract.saldoContrato) || 0,
                     `"${contract.status}"`,
                     `"${expirationDisplay.text}"`
                 ].join(',');
