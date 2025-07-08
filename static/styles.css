@@ -353,6 +353,81 @@ body {
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
+/* Searchable Select Styles */
+.searchable-select-container {
+    position: relative;
+    width: 100%;
+}
+
+.searchable-select-container input {
+    width: 100%;
+    padding: 10px 35px 10px 12px;
+    border: 2px solid #e9ecef;
+    border-radius: var(--border-radius);
+    font-size: 0.9em;
+    transition: var(--transition);
+    background: white;
+}
+
+.searchable-select-container input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.dropdown-arrow {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #666;
+    pointer-events: none;
+    transition: var(--transition);
+}
+
+.searchable-select-container.dropdown-open .dropdown-arrow {
+    transform: translateY(-50%) rotate(180deg);
+}
+
+.searchable-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 2px solid var(--primary-color);
+    border-top: none;
+    border-radius: 0 0 var(--border-radius) var(--border-radius);
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    display: none;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.dropdown-option {
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 0.9em;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.dropdown-option:hover {
+    background: var(--light-color);
+    color: var(--primary-color);
+}
+
+.dropdown-option:last-child {
+    border-bottom: none;
+}
+
+.dropdown-option[data-value=""] {
+    font-weight: 600;
+    color: var(--primary-color);
+    background: rgba(102, 126, 234, 0.05);
+}
+
 /* Estilo especial para o filtro de vencimento */
 #expirationFilter {
     background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
@@ -612,7 +687,7 @@ body {
 table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 1000px;
+    min-width: 1100px;
 }
 
 table th,
@@ -624,20 +699,28 @@ table td {
 }
 
 /* Colunas específicas com quebra de linha */
-table th:nth-child(3), /* Empresa */
-table th:nth-child(4), /* Fornecedor */
-table td:nth-child(3), /* Empresa */
-table td:nth-child(4) { /* Fornecedor */
+table th:nth-child(2), /* Empresa */
+table th:nth-child(3), /* Fornecedor */
+table td:nth-child(2), /* Empresa */
+table td:nth-child(3) { /* Fornecedor */
     white-space: normal;
     word-wrap: break-word;
     word-break: break-word;
-    max-width: 150px;
-    min-width: 120px;
+    max-width: 140px;
+    min-width: 110px;
 }
 
-/* Outras colunas mantêm nowrap */
-table th:not(:nth-child(3)):not(:nth-child(4)),
-table td:not(:nth-child(3)):not(:nth-child(4)) {
+/* Coluna Status com largura fixa para evitar quebra */
+table th:nth-child(12), /* Status */
+table td:nth-child(12) { /* Status */
+    white-space: nowrap;
+    min-width: 140px;
+    max-width: 140px;
+}
+
+/* Outras colunas mantêm nowrap exceto empresa, fornecedor e status */
+table th:not(:nth-child(2)):not(:nth-child(3)):not(:nth-child(12)),
+table td:not(:nth-child(2)):not(:nth-child(3)):not(:nth-child(12)) {
     white-space: nowrap;
 }
 
@@ -1228,7 +1311,7 @@ table td {
     }
     
     table {
-        min-width: 900px;
+        min-width: 950px;
     }
     
     table th,
@@ -1237,12 +1320,18 @@ table td {
         font-size: 0.8em;
     }
     
+    table th:nth-child(2),
     table th:nth-child(3),
-    table th:nth-child(4),
-    table td:nth-child(3),
-    table td:nth-child(4) {
-        max-width: 130px;
-        min-width: 100px;
+    table td:nth-child(2),
+    table td:nth-child(3) {
+        max-width: 120px;
+        min-width: 90px;
+    }
+    
+    table th:nth-child(12),
+    table td:nth-child(12) {
+        min-width: 120px;
+        max-width: 120px;
     }
     
     .status-cell {
@@ -1315,7 +1404,7 @@ table td {
     }
     
     table {
-        min-width: 700px;
+        min-width: 750px;
     }
     
     table th,
@@ -1324,12 +1413,18 @@ table td {
         font-size: 0.75em;
     }
     
+    table th:nth-child(2),
     table th:nth-child(3),
-    table th:nth-child(4),
-    table td:nth-child(3),
-    table td:nth-child(4) {
-        max-width: 110px;
-        min-width: 90px;
+    table td:nth-child(2),
+    table td:nth-child(3) {
+        max-width: 100px;
+        min-width: 80px;
+    }
+    
+    table th:nth-child(12),
+    table td:nth-child(12) {
+        min-width: 100px;
+        max-width: 100px;
     }
     
     .status-cell {
@@ -1419,7 +1514,7 @@ table td {
     }
     
     table {
-        min-width: 600px;
+        min-width: 650px;
         font-size: 0.7em;
     }
     
@@ -1429,12 +1524,18 @@ table td {
         font-size: 0.7em;
     }
     
+    table th:nth-child(2),
     table th:nth-child(3),
-    table th:nth-child(4),
-    table td:nth-child(3),
-    table td:nth-child(4) {
+    table td:nth-child(2),
+    table td:nth-child(3) {
+        max-width: 80px;
+        min-width: 60px;
+    }
+    
+    table th:nth-child(12),
+    table td:nth-child(12) {
+        min-width: 90px;
         max-width: 90px;
-        min-width: 70px;
     }
     
     .status-cell {
@@ -1471,6 +1572,10 @@ table td {
     .contract-object-content {
         padding: 12px;
     }
+    
+    .searchable-dropdown {
+        max-height: 150px;
+    }
 }
 
 /* Mobile pequeno (até 480px) */
@@ -1488,16 +1593,22 @@ table td {
     }
     
     table {
-        min-width: 500px;
+        min-width: 550px;
         font-size: 0.65em;
     }
     
+    table th:nth-child(2),
     table th:nth-child(3),
-    table th:nth-child(4),
-    table td:nth-child(3),
-    table td:nth-child(4) {
+    table td:nth-child(2),
+    table td:nth-child(3) {
+        max-width: 70px;
+        min-width: 50px;
+    }
+    
+    table th:nth-child(12),
+    table td:nth-child(12) {
+        min-width: 80px;
         max-width: 80px;
-        min-width: 60px;
     }
     
     .status-cell {
@@ -1513,6 +1624,10 @@ table td {
     
     .filters {
         padding: 8px;
+    }
+    
+    .searchable-dropdown {
+        max-height: 120px;
     }
 }
 
@@ -1532,7 +1647,7 @@ table td {
 /* Otimizações específicas para notebooks */
 @media (max-width: 1366px) and (min-width: 1024px) {
     table {
-        min-width: 850px;
+        min-width: 900px;
     }
 }
 
