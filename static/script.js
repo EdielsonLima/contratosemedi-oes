@@ -167,7 +167,7 @@ class ContractPortal {
             console.error("Erro ao buscar contratos:", error);
             this.showToast(`Erro ao carregar dados: ${error.message}`, 'error');
             this.contractsTableBody.innerHTML = `
-                <tr><td colspan="13" class="text-center">
+                <tr><td colspan="12" class="text-center">
                     <i class="fas fa-exclamation-triangle"></i> 
                     Erro ao carregar dados: ${error.message}
                 </td></tr>
@@ -355,7 +355,7 @@ class ContractPortal {
         
         if (this.filteredContracts.length === 0) {
             this.contractsTableBody.innerHTML = `
-                <tr><td colspan="13" class="text-center">
+                <tr><td colspan="12" class="text-center">
                     <i class="fas fa-search"></i> 
                     Nenhum contrato encontrado com os filtros aplicados.
                 </td></tr>
@@ -454,16 +454,6 @@ class ContractPortal {
             } else {
                 balanceCell.style.color = '#28a745'; // Verde para saldo positivo
                 balanceCell.style.fontWeight = '600';
-            }
-            
-            // Caução/Retenção
-            const retentionValue = parseFloat(contract.retentionValue) || 0;
-            const retentionCell = row.insertCell();
-            
-            // DEBUG: Log do valor de caução para cada contrato
-            if (contract.contractNumber === '2') {
-                console.log(`🔍 FRONTEND - Contrato ${contract.contractNumber} retentionValue:`, retentionValue);
-                console.log(`🔍 FRONTEND - Contrato ${contract.contractNumber} objeto completo:`, contract);
             }
             
             // Status with enhanced styling - MOVIDO PARA O FINAL
@@ -841,7 +831,6 @@ class ContractPortal {
             'Valor Total',
             'Valor Medido',
             'Saldo',
-            'Caução/Retenção',
             'Status',
             'Situação de Vencimento'
         ];
@@ -862,6 +851,7 @@ class ContractPortal {
                     parseFloat(contract.totalMaterialValue) || 0,
                     parseFloat(contract.valorTotal) || 0,
                     parseFloat(contract.valorMedido) || 0,
+                    parseFloat(contract.saldoContrato) || 0,
                     `"${contract.status}"`,
                     `"${expirationDisplay.text}"`
                 ].join(',');
