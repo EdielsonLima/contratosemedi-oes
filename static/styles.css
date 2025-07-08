@@ -398,24 +398,34 @@ body {
     border: 2px solid var(--primary-color);
     border-top: none;
     border-radius: 0 0 var(--border-radius) var(--border-radius);
-    max-height: 200px;
+    max-height: 300px;
+    min-height: 150px;
     overflow-y: auto;
     z-index: 1000;
     display: none;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    width: 350px;
+    min-width: 350px;
 }
 
 .dropdown-option {
-    padding: 10px 12px;
+    padding: 12px 15px;
     cursor: pointer;
     transition: var(--transition);
-    font-size: 0.9em;
+    font-size: 0.95em;
     border-bottom: 1px solid #f0f0f0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .dropdown-option:hover {
     background: var(--light-color);
     color: var(--primary-color);
+    white-space: normal;
+    overflow: visible;
+    text-overflow: initial;
+    word-wrap: break-word;
 }
 
 .dropdown-option:last-child {
@@ -687,7 +697,7 @@ body {
 table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 1100px;
+    min-width: 1200px;
 }
 
 table th,
@@ -711,16 +721,17 @@ table td:nth-child(3) { /* Fornecedor */
 }
 
 /* Coluna Status com largura fixa para evitar quebra */
-table th:nth-child(12), /* Status */
-table td:nth-child(12) { /* Status */
+table th:nth-child(11), /* Status */
+table td:nth-child(11) { /* Status */
     white-space: nowrap;
-    min-width: 140px;
-    max-width: 140px;
+    min-width: 160px;
+    max-width: 160px;
+    text-align: center;
 }
 
 /* Outras colunas mantêm nowrap exceto empresa, fornecedor e status */
-table th:not(:nth-child(2)):not(:nth-child(3)):not(:nth-child(12)),
-table td:not(:nth-child(2)):not(:nth-child(3)):not(:nth-child(12)) {
+table th:not(:nth-child(2)):not(:nth-child(3)):not(:nth-child(11)),
+table td:not(:nth-child(2)):not(:nth-child(3)):not(:nth-child(11)) {
     white-space: nowrap;
 }
 
@@ -1330,8 +1341,8 @@ table td {
     
     table th:nth-child(12),
     table td:nth-child(12) {
-        min-width: 120px;
-        max-width: 120px;
+        min-width: 140px;
+        max-width: 140px;
     }
     
     .status-cell {
@@ -1423,8 +1434,8 @@ table td {
     
     table th:nth-child(12),
     table td:nth-child(12) {
-        min-width: 100px;
-        max-width: 100px;
+        min-width: 120px;
+        max-width: 120px;
     }
     
     .status-cell {
@@ -1534,8 +1545,8 @@ table td {
     
     table th:nth-child(12),
     table td:nth-child(12) {
-        min-width: 90px;
-        max-width: 90px;
+        min-width: 110px;
+        max-width: 110px;
     }
     
     .status-cell {
@@ -1574,7 +1585,9 @@ table td {
     }
     
     .searchable-dropdown {
-        max-height: 150px;
+        max-height: 250px;
+        width: 300px;
+        min-width: 300px;
     }
 }
 
@@ -1607,8 +1620,8 @@ table td {
     
     table th:nth-child(12),
     table td:nth-child(12) {
-        min-width: 80px;
-        max-width: 80px;
+        min-width: 100px;
+        max-width: 100px;
     }
     
     .status-cell {
@@ -1627,7 +1640,9 @@ table td {
     }
     
     .searchable-dropdown {
-        max-height: 120px;
+        max-height: 200px;
+        width: 280px;
+        min-width: 280px;
     }
 }
 
