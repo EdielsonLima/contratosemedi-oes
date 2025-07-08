@@ -106,15 +106,10 @@ class ContractPortal {
             if (e.key === 'Escape' && this.contractDetailsPanel.style.display !== 'none') {
                 this.closeContractDetails();
             }
-            if (e.key === 'Escape') {
-                this.hideSupplierDropdown();
-            }
         });
         
         // Contract details panel events
         this.closeDetailsPanel.addEventListener('click', () => this.closeContractDetails());
-        
-        // Click outside to close dropdown
     }
 
     showLoading() {
@@ -184,7 +179,7 @@ class ContractPortal {
     }
 
     populateFilters() {
-        // Clear existing options for select elements (except first)
+        // Clear existing options (except first)
         [this.statusFilter, this.companyFilter, this.supplierFilter].forEach(select => {
             while (select.children.length > 1) {
                 select.removeChild(select.lastChild);
@@ -475,7 +470,6 @@ class ContractPortal {
             const statusCell = row.insertCell();
             const statusClass = this.getStatusClass(contract.status);
             statusCell.innerHTML = `<span class="status-cell ${statusClass}">${contract.status}</span>`;
-            statusCell.style.textAlign = 'center'; // Forçar alinhamento central
         });
 
         this.tableInfo.textContent = `Mostrando ${this.filteredContracts.length} contratos`;
