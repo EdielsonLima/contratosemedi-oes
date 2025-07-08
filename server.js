@@ -12,6 +12,53 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Configurações para retry e timeout
+const RETRY_CONFIG = {
+    maxRetries: 3,
+    retryDelay: 2000, // 2 segundos
+    timeout: 15000 // 15 segundos
+};
+
+// Função utilitária para fazer requisições com retry e timeout
+async function fetchWithRetry(url, options = {}, retries = RETRY_CONFIG.maxRetries) {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), RETRY_CONFIG.timeout);
+        
+        try {
+            const response = await fetch(url, {
+                ...options,
+                signal: controller.signal
+            });
+            
+            clearTimeout(timeoutId);
+            return response;
+            
+        } catch (error) {
+            clearTimeout(timeoutId);
+            
+            const isNetworkError = error.name === 'AbortError' || 
+                                 error.code === 'ECONNRESET' || 
+                                 error.message.includes('socket hang up') ||
+                                 error.message.includes('timeout') ||
+                                 error.message.includes('ENOTFOUND') ||
+                                 error.message.includes('ECONNREFUSED');
+            
+            if (isNetworkError && attempt < retries) {
+                console.log(`⚠️ Tentativa ${attempt}/${retries} falhou para ${url}: ${error.message}`);
+                console.log(`🔄 Tentando novamente em ${RETRY_CONFIG.retryDelay}ms...`);
+                
+                // Aguardar antes da próxima tentativa
+                await new Promise(resolve => setTimeout(resolve, RETRY_CONFIG.retryDelay));
+                continue;
+            }
+            
+            // Se não é erro de rede ou esgotaram as tentativas, relançar o erro
+            throw error;
+        }
+    }
+}
+
 // Middleware
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
@@ -58,7 +105,7 @@ app.get('/api/contracts', async (req, res) => {
             const url = `${SIENGE_API_URL}?${params}`;
 
             try {
-                const response = await fetch(url, { headers });
+                const response = await fetchWithRetry(url, { headers });
                 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -175,7 +222,7 @@ app.get('/api/measurements', async (req, res) => {
             console.log(`📡 Buscando página ${Math.floor(offset/limit) + 1}: ${url}`);
 
             try {
-                const response = await fetch(url, { headers });
+                const response = await fetchWithRetry(url, { headers });
                 
                 if (!response.ok) {
                     console.error(`❌ Erro ${response.status} na página ${Math.floor(offset/limit) + 1}`);
@@ -327,7 +374,7 @@ async function fetchAllMeasurements(headers) {
             });
             
             const testUrl = `${testEndpoint}?${params}`;
-            const response = await fetch(testUrl, { headers });
+            const response = await fetchWithRetry(testUrl, { headers });
             
             console.log(`   Status: ${response.status} ${response.statusText}`);
             
@@ -382,7 +429,7 @@ async function fetchAllMeasurementsFromEndpoint(endpoint, headers) {
         const url = `${endpoint}?${params}`;
 
         try {
-            const response = await fetch(url, { headers });
+            const response = await fetchWithRetry(url, { headers });
             
             if (!response.ok) {
                 console.error(`❌ Erro ${response.status} na página ${Math.floor(offset/limit) + 1}`);
