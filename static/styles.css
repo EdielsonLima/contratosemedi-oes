@@ -636,19 +636,19 @@ table td:nth-child(3) { /* Fornecedor */
     min-width: 110px;
 }
 
-/* Coluna Status com largura fixa para evitar quebra - CORRIGIDO: agora é a 12ª coluna */
-table th:nth-child(12), /* Status */
-table td:nth-child(12) { /* Status */
+/* Coluna Status - ÚLTIMA COLUNA */
+table th:last-child, /* Status */
+table td:last-child { /* Status */
     white-space: nowrap;
     min-width: 200px;
     max-width: 200px;
-    text-align: center;
+    text-align: center !important;
     padding: 12px 8px !important;
 }
 
-/* Outras colunas mantêm nowrap exceto empresa, fornecedor e status - CORRIGIDO */
-table th:not(:nth-child(2)):not(:nth-child(3)):not(:nth-child(12)),
-table td:not(:nth-child(2)):not(:nth-child(3)):not(:nth-child(12)) {
+/* Outras colunas mantêm nowrap exceto empresa, fornecedor e status */
+table th:not(:nth-child(2)):not(:nth-child(3)):not(:last-child),
+table td:not(:nth-child(2)):not(:nth-child(3)):not(:last-child) {
     white-space: nowrap;
 }
 
@@ -713,14 +713,14 @@ table td {
     font-size: 0.8em;
     text-transform: uppercase;
     letter-spacing: 0.3px;
-    text-align: center;
+    text-align: center !important;
     white-space: nowrap;
     display: inline-block;
     min-width: 120px;
     max-width: 180px;
     border: 1px solid;
     overflow: visible;
-    margin: 0 auto;
+    margin: 0 auto !important;
 }
 
 /* PARTIALLY_MEASURED - Em andamento (Azul) */
@@ -1261,9 +1261,9 @@ table td {
     
     table th:nth-child(12), /* Status */
     table td:nth-child(12) { /* Status */
-        min-width: 180px;
-        max-width: 180px;
-        text-align: center;
+        min-width: 180px !important;
+        max-width: 180px !important;
+        text-align: center !important;
     }
     
     .status-cell {
@@ -1356,9 +1356,9 @@ table td {
     
     table th:nth-child(12), /* Status */
     table td:nth-child(12) { /* Status */
-        min-width: 160px;
-        max-width: 160px;
-        text-align: center;
+        min-width: 160px !important;
+        max-width: 160px !important;
+        text-align: center !important;
     }
     
     .status-cell {
@@ -1469,9 +1469,9 @@ table td {
     
     table th:nth-child(12), /* Status */
     table td:nth-child(12) { /* Status */
-        min-width: 140px;
-        max-width: 140px;
-        text-align: center;
+        min-width: 140px !important;
+        max-width: 140px !important;
+        text-align: center !important;
     }
     
     .status-cell {
@@ -1547,9 +1547,9 @@ table td {
     
     table th:nth-child(12), /* Status */
     table td:nth-child(12) { /* Status */
-        min-width: 120px;
-        max-width: 120px;
-        text-align: center;
+        min-width: 120px !important;
+        max-width: 120px !important;
+        text-align: center !important;
     }
     
     .status-cell {

@@ -475,6 +475,7 @@ class ContractPortal {
             const statusCell = row.insertCell();
             const statusClass = this.getStatusClass(contract.status);
             statusCell.innerHTML = `<span class="status-cell ${statusClass}">${contract.status}</span>`;
+            statusCell.style.textAlign = 'center'; // Forçar alinhamento central
         });
 
         this.tableInfo.textContent = `Mostrando ${this.filteredContracts.length} contratos`;
