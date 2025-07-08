@@ -398,10 +398,10 @@ body {
     border: 2px solid var(--primary-color);
     border-top: none;
     border-radius: 0 0 var(--border-radius) var(--border-radius);
-    max-height: 300px;
-    min-height: 150px;
+    max-height: 500px;
+    min-height: 300px;
     overflow-y: auto;
-    z-index: 1000;
+    z-index: 2000;
     display: none;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     width: 350px;
@@ -1585,7 +1585,8 @@ table td {
     }
     
     .searchable-dropdown {
-        max-height: 250px;
+        max-height: 400px;
+        min-height: 250px;
         width: 300px;
         min-width: 300px;
     }
@@ -1640,7 +1641,8 @@ table td {
     }
     
     .searchable-dropdown {
-        max-height: 200px;
+        max-height: 350px;
+        min-height: 200px;
         width: 280px;
         min-width: 280px;
     }
