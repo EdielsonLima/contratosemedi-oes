@@ -640,9 +640,10 @@ table td:nth-child(3) { /* Fornecedor */
 table th:nth-child(12), /* Status */
 table td:nth-child(12) { /* Status */
     white-space: nowrap;
-    min-width: 220px;
-    max-width: 220px;
+    min-width: 200px;
+    max-width: 200px;
     text-align: center;
+    padding: 12px 8px !important;
 }
 
 /* Outras colunas mantêm nowrap exceto empresa, fornecedor e status - CORRIGIDO */
@@ -715,10 +716,11 @@ table td {
     text-align: center;
     white-space: nowrap;
     display: inline-block;
-    min-width: 140px;
-    max-width: 200px;
+    min-width: 120px;
+    max-width: 180px;
     border: 1px solid;
     overflow: visible;
+    margin: 0 auto;
 }
 
 /* PARTIALLY_MEASURED - Em andamento (Azul) */
@@ -1259,15 +1261,16 @@ table td {
     
     table th:nth-child(12), /* Status */
     table td:nth-child(12) { /* Status */
-        min-width: 200px;
-        max-width: 200px;
+        min-width: 180px;
+        max-width: 180px;
+        text-align: center;
     }
     
     .status-cell {
         font-size: 0.75em;
         padding: 4px 10px !important;
-        min-width: 120px;
-        max-width: 180px;
+        min-width: 100px;
+        max-width: 160px;
     }
 }
 
@@ -1353,15 +1356,16 @@ table td {
     
     table th:nth-child(12), /* Status */
     table td:nth-child(12) { /* Status */
-        min-width: 180px;
-        max-width: 180px;
+        min-width: 160px;
+        max-width: 160px;
+        text-align: center;
     }
     
     .status-cell {
         font-size: 0.7em;
         padding: 3px 8px !important;
-        min-width: 110px;
-        max-width: 160px;
+        min-width: 90px;
+        max-width: 140px;
     }
 }
 
@@ -1465,15 +1469,16 @@ table td {
     
     table th:nth-child(12), /* Status */
     table td:nth-child(12) { /* Status */
-        min-width: 160px;
-        max-width: 160px;
+        min-width: 140px;
+        max-width: 140px;
+        text-align: center;
     }
     
     .status-cell {
         font-size: 0.65em;
         padding: 3px 6px !important;
-        min-width: 100px;
-        max-width: 140px;
+        min-width: 80px;
+        max-width: 120px;
     }
     
     .toast-container {
@@ -1542,15 +1547,16 @@ table td {
     
     table th:nth-child(12), /* Status */
     table td:nth-child(12) { /* Status */
-        min-width: 140px;
-        max-width: 140px;
+        min-width: 120px;
+        max-width: 120px;
+        text-align: center;
     }
     
     .status-cell {
         font-size: 0.6em;
         padding: 2px 4px !important;
-        min-width: 90px;
-        max-width: 120px;
+        min-width: 70px;
+        max-width: 100px;
     }
     
     .filters-header,
