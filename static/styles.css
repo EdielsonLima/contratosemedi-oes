@@ -640,8 +640,8 @@ table td:nth-child(3) { /* Fornecedor */
 table th:nth-child(11), /* Status */
 table td:nth-child(11) { /* Status */
     white-space: nowrap;
-    min-width: 160px;
-    max-width: 160px;
+    min-width: 200px;
+    max-width: 200px;
     text-align: center;
 }
 
@@ -715,8 +715,12 @@ table td {
     text-align: center;
     white-space: nowrap;
     display: inline-block;
-    min-width: 70px;
+    min-width: 120px;
+    max-width: 180px;
     border: 1px solid;
+    word-wrap: break-word;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* PARTIALLY_MEASURED - Em andamento (Azul) */
@@ -1257,14 +1261,15 @@ table td {
     
     table th:nth-child(12),
     table td:nth-child(12) {
-        min-width: 140px;
-        max-width: 140px;
+        min-width: 180px;
+        max-width: 180px;
     }
     
     .status-cell {
         font-size: 0.7em;
         padding: 3px 8px !important;
-        min-width: 60px;
+        min-width: 100px;
+        max-width: 160px;
     }
 }
 
@@ -1350,14 +1355,15 @@ table td {
     
     table th:nth-child(12),
     table td:nth-child(12) {
-        min-width: 120px;
-        max-width: 120px;
+        min-width: 160px;
+        max-width: 160px;
     }
     
     .status-cell {
         font-size: 0.65em;
         padding: 2px 6px !important;
-        min-width: 50px;
+        min-width: 90px;
+        max-width: 140px;
     }
 }
 
@@ -1461,14 +1467,15 @@ table td {
     
     table th:nth-child(12),
     table td:nth-child(12) {
-        min-width: 110px;
-        max-width: 110px;
+        min-width: 140px;
+        max-width: 140px;
     }
     
     .status-cell {
         font-size: 0.6em;
         padding: 2px 4px !important;
-        min-width: 45px;
+        min-width: 80px;
+        max-width: 120px;
     }
     
     .toast-container {
@@ -1537,14 +1544,15 @@ table td {
     
     table th:nth-child(12),
     table td:nth-child(12) {
-        min-width: 100px;
-        max-width: 100px;
+        min-width: 120px;
+        max-width: 120px;
     }
     
     .status-cell {
         font-size: 0.55em;
         padding: 1px 3px !important;
-        min-width: 40px;
+        min-width: 70px;
+        max-width: 100px;
     }
     
     .filters-header,
