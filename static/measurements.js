@@ -16,7 +16,6 @@ class MeasurementsPortal {
         // Stats elements
         this.totalMeasurementsCard = document.getElementById("totalMeasurements");
         this.totalMeasuredValueCard = document.getElementById("totalMeasuredValue");
-        this.totalRetentionCard = document.getElementById("totalRetention");
         this.totalLiquidCard = document.getElementById("totalLiquid");
         this.contractsWithMeasurementsCard = document.getElementById("contractsWithMeasurements");
         this.avgMeasurementValueCard = document.getElementById("avgMeasurementValue");
@@ -527,14 +526,6 @@ class MeasurementsPortal {
             const materialCell = row.insertCell();
             materialCell.className = 'value-cell';
             materialCell.textContent = materialValue.toLocaleString("pt-BR", { 
-                style: "currency", currency: "BRL" 
-            });
-            
-            // Caução
-            const retentionValue = parseFloat(measurement.retentionValue) || 0;
-            const retentionCell = row.insertCell();
-            retentionCell.className = 'value-cell retention';
-            retentionCell.textContent = retentionValue.toLocaleString("pt-BR", { 
                 style: "currency", currency: "BRL" 
             });
             
