@@ -114,13 +114,9 @@
                 </div>
                 <div class="filter-group">
                     <label for="supplierFilter">Fornecedor</label>
-                    <div class="searchable-select-container">
-                        <input type="text" id="supplierFilter" placeholder="Digite ou selecione um fornecedor..." autocomplete="off">
-                        <div class="searchable-dropdown" id="supplierDropdown">
-                            <div class="dropdown-option" data-value="">Todos os fornecedores</div>
-                        </div>
-                        <i class="fas fa-chevron-down dropdown-arrow"></i>
-                    </div>
+                    <select id="supplierFilter">
+                        <option value="">Todos os fornecedores</option>
+                    </select>
                 </div>
                 <div class="filter-group">
                     <label for="expirationFilter"><i class="fas fa-calendar-times"></i> Situação de Vencimento</label>

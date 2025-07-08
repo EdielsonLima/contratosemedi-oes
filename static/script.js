@@ -28,7 +28,6 @@ class ContractPortal {
         this.statusFilter = document.getElementById("statusFilter");
         this.companyFilter = document.getElementById("companyFilter");
         this.supplierFilter = document.getElementById("supplierFilter");
-        this.supplierDropdown = document.getElementById("supplierDropdown");
         this.contractNumberFilter = document.getElementById("contractNumberFilter");
         this.expirationFilter = document.getElementById("expirationFilter");
         this.filtersContainer = document.getElementById("filtersContainer");
@@ -71,9 +70,7 @@ class ContractPortal {
         // Filter events
         this.statusFilter.addEventListener("change", () => this.applyFilters());
         this.companyFilter.addEventListener("change", () => this.applyFilters());
-        this.supplierFilter.addEventListener("input", () => this.handleSupplierSearch());
-        this.supplierFilter.addEventListener("focus", () => this.showSupplierDropdown());
-        this.supplierFilter.addEventListener("blur", () => this.hideSupplierDropdown());
+        this.supplierFilter.addEventListener("change", () => this.applyFilters());
         this.contractNumberFilter.addEventListener("input", () => this.applyFilters());
         this.expirationFilter.addEventListener("change", () => this.applyFilters());
         
@@ -118,11 +115,6 @@ class ContractPortal {
         this.closeDetailsPanel.addEventListener('click', () => this.closeContractDetails());
         
         // Click outside to close dropdown
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.searchable-select-container')) {
-                this.hideSupplierDropdown();
-            }
-        });
     }
 
     showLoading() {
@@ -193,7 +185,7 @@ class ContractPortal {
 
     populateFilters() {
         // Clear existing options for select elements (except first)
-        [this.statusFilter, this.companyFilter].forEach(select => {
+        [this.statusFilter, this.companyFilter, this.supplierFilter].forEach(select => {
             while (select.children.length > 1) {
                 select.removeChild(select.lastChild);
             }
@@ -217,69 +209,7 @@ class ContractPortal {
             this.companyFilter.appendChild(option);
         });
 
-        // Store suppliers for searchable dropdown
-        this.allSuppliers = [...new Set(this.allContracts.map(c => c.supplierName))].sort();
-        this.populateSupplierDropdown(this.allSuppliers);
-    }
-
-    populateSupplierDropdown(suppliers) {
-        // Clear existing options (except first)
-        while (this.supplierDropdown.children.length > 1) {
-            this.supplierDropdown.removeChild(this.supplierDropdown.lastChild);
-        }
-        
-        // Add suppliers to dropdown
-        suppliers.forEach(supplier => {
-            const option = document.createElement("div");
-            option.className = "dropdown-option";
-            option.dataset.value = supplier;
-            option.textContent = supplier;
-            option.addEventListener('mousedown', (e) => {
-                e.preventDefault(); // Prevent blur event
-                this.selectSupplier(supplier);
-            });
-            this.supplierDropdown.appendChild(option);
-        });
-    }
-
-    handleSupplierSearch() {
-        const searchTerm = this.supplierFilter.value.toLowerCase();
-        
-        if (searchTerm === '') {
-            // Show all suppliers
-            this.populateSupplierDropdown(this.allSuppliers);
-        } else {
-            // Filter suppliers based on search term
-            const filteredSuppliers = this.allSuppliers.filter(supplier => 
-                supplier.toLowerCase().includes(searchTerm)
-            );
-            this.populateSupplierDropdown(filteredSuppliers);
-        }
-        
-        this.showSupplierDropdown();
-        this.applyFilters();
-    }
-
-    selectSupplier(supplier) {
-        this.supplierFilter.value = supplier;
-        this.hideSupplierDropdown();
-        this.applyFilters();
-    }
-
-    showSupplierDropdown() {
-        this.supplierDropdown.style.display = 'block';
-        this.supplierDropdown.parentElement.classList.add('dropdown-open');
-    }
-
-    hideSupplierDropdown() {
-        setTimeout(() => {
-            this.supplierDropdown.style.display = 'none';
-            this.supplierDropdown.parentElement.classList.remove('dropdown-open');
-        }, 150);
-    }
-
-    // Remove the old supplier filter population code
-    populateOldSupplierFilter() {
+        // Populate supplier filter
         const suppliers = [...new Set(this.allContracts.map(c => c.supplierName))].sort();
         suppliers.forEach(supplier => {
             const option = document.createElement("option");
@@ -332,15 +262,14 @@ class ContractPortal {
     applyFilters() {
         const selectedStatus = this.statusFilter.value;
         const selectedCompany = this.companyFilter.value;
-        const selectedSupplier = this.supplierFilter.value.trim();
+        const selectedSupplier = this.supplierFilter.value;
         const contractNumberText = this.contractNumberFilter.value.toLowerCase();
         const expirationFilter = this.expirationFilter.value;
 
         this.filteredContracts = this.allContracts.filter(contract => {
             const matchesStatus = selectedStatus ? contract.status === selectedStatus : true;
             const matchesCompany = selectedCompany ? contract.companyName === selectedCompany : true;
-            const matchesSupplier = selectedSupplier ? 
-                contract.supplierName.toLowerCase().includes(selectedSupplier.toLowerCase()) : true;
+            const matchesSupplier = selectedSupplier ? contract.supplierName === selectedSupplier : true;
             const matchesContractNumber = contractNumberText ? 
                 contract.contractNumber.toLowerCase().includes(contractNumberText) : true;
             const matchesExpiration = this.matchesExpirationFilter(contract, expirationFilter);
@@ -881,7 +810,6 @@ class ContractPortal {
         this.statusFilter.value = "";
         this.companyFilter.value = "";
         this.supplierFilter.value = "";
-        this.hideSupplierDropdown();
         this.contractNumberFilter.value = "";
         this.expirationFilter.value = "";
         
