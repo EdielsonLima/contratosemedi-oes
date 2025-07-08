@@ -184,16 +184,26 @@ class MeasurementsPortal {
             const materialValue = parseFloat(measurement.totalMaterialValue) || 0;
             const totalValue = laborValue + materialValue;
             
-            // Calcular caução (5% do valor total)
-            const retentionValue = totalValue * 0.05;
-            const liquidValue = totalValue - retentionValue;
-            
-            // Encontrar contrato correspondente
+            // Calcular caução baseado no contrato correspondente
             const contract = this.allContracts.find(c => 
                 c.id === measurement.contractId || 
                 c.contractNumber === measurement.contractNumber ||
                 c.contractId === measurement.supplyContractId
             );
+            
+            let retentionValue = 0;
+            if (contract && contract.retentionValue) {
+                // Usar valor de caução do contrato se disponível
+                retentionValue = parseFloat(contract.retentionValue) || 0;
+            } else if (contract && contract.securityDeposit) {
+                // Calcular baseado na configuração de caução do contrato
+                const securityDepositPercentage = parseFloat(contract.securityDeposit.securityDepositPercentage || 0);
+                if (securityDepositPercentage > 0) {
+                    retentionValue = (totalValue * securityDepositPercentage) / 100;
+                }
+            }
+            
+            const liquidValue = totalValue - retentionValue;
             
             // Formatar data da medição
             const measurementDate = measurement.measurementDate || measurement.createdAt || new Date().toISOString();
@@ -242,8 +252,17 @@ class MeasurementsPortal {
                     const materialValue = (contract.valorMedido / numMeasurements) * (0.3 + Math.random() * 0.4);
                     const totalValue = laborValue + materialValue;
                     
-                    // Calculate retention (5% of total value)
-                    const retentionValue = totalValue * 0.05;
+                    // Calculate retention based on contract configuration
+                    let retentionValue = 0;
+                    if (contract.retentionValue) {
+                        // Usar proporção da caução do contrato
+                        retentionValue = (contract.retentionValue / contract.valorMedido) * totalValue;
+                    } else if (contract.securityDeposit && contract.securityDeposit.securityDepositPercentage) {
+                        // Calcular baseado na porcentagem configurada
+                        const percentage = parseFloat(contract.securityDeposit.securityDepositPercentage);
+                        retentionValue = (totalValue * percentage) / 100;
+                    }
+                    
                     const liquidValue = totalValue - retentionValue;
                     
                     this.allMeasurements.push({

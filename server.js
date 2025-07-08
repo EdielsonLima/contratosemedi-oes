@@ -570,22 +570,10 @@ function calculateMeasurementsData(contracts, measurements) {
 
 // Função para calcular valor de caução/retenção
 function calculateRetentionValue(contract, measurements) {
-    // Calcular caução baseado nas medições (5% do valor medido)
-    const totalMeasuredValue = measurements.reduce((sum, measurement) => {
-        const laborValue = parseFloat(measurement.totalLaborValue || 0);
-        const materialValue = parseFloat(measurement.totalMaterialValue || 0);
-        return sum + laborValue + materialValue;
-    }, 0);
-    
-    // Se há valor medido, calcular 5% de caução
-    if (totalMeasuredValue > 0) {
-        const calculatedRetention = totalMeasuredValue * 0.05;
-        console.log(`💰 CAUÇÃO - Contrato ${contract.contractNumber}: 5% de R$ ${totalMeasuredValue} = R$ ${calculatedRetention}`);
-        return calculatedRetention;
-    }
-    
     // 1. Verificar se existe objeto securityDeposit no contrato
     if (contract.securityDeposit) {
+        console.log(`🔍 CAUÇÃO - Contrato ${contract.contractNumber}: Encontrado objeto securityDeposit:`, contract.securityDeposit);
+        
         // Verificar saldo da caução
         const securityDepositBalance = parseFloat(contract.securityDeposit.securityDepositBalance || 0);
         if (securityDepositBalance > 0) {
@@ -596,7 +584,13 @@ function calculateRetentionValue(contract, measurements) {
         // Se não tem saldo, verificar se tem porcentagem para calcular
         const securityDepositPercentage = parseFloat(contract.securityDeposit.securityDepositPercentage || 0);
         if (securityDepositPercentage > 0) {
-            // Calcular sobre o valor total do contrato ou valor medido
+            // Calcular caução baseado nas medições usando a porcentagem do contrato
+            const totalMeasuredValue = measurements.reduce((sum, measurement) => {
+                const laborValue = parseFloat(measurement.totalLaborValue || 0);
+                const materialValue = parseFloat(measurement.totalMaterialValue || 0);
+                return sum + laborValue + materialValue;
+            }, 0);
+            
             const totalContractValue = parseFloat(contract.valorTotal || 0);
             
             // Usar valor medido se existir, senão usar valor total do contrato
@@ -606,9 +600,40 @@ function calculateRetentionValue(contract, measurements) {
             console.log(`💰 CAUÇÃO - Contrato ${contract.contractNumber}: ${securityDepositPercentage}% de R$ ${baseValue} = R$ ${calculatedRetention}`);
             return calculatedRetention;
         }
+        
+        // Se tem objeto securityDeposit mas sem valores, pode ter outros campos
+        const securityDepositValue = parseFloat(contract.securityDeposit.securityDepositValue || 0);
+        if (securityDepositValue > 0) {
+            console.log(`💰 CAUÇÃO - Contrato ${contract.contractNumber}: securityDepositValue R$ ${securityDepositValue}`);
+            return securityDepositValue;
+        }
     }
     
-    console.log(`💰 CAUÇÃO - Contrato ${contract.contractNumber}: Sem caução (R$ 0)`);
+    // 2. Verificar se existe campo direto de caução no contrato
+    const directSecurityDeposit = parseFloat(contract.securityDepositValue || 0);
+    if (directSecurityDeposit > 0) {
+        console.log(`💰 CAUÇÃO - Contrato ${contract.contractNumber}: securityDepositValue direto R$ ${directSecurityDeposit}`);
+        return directSecurityDeposit;
+    }
+    
+    // 3. Verificar outros possíveis campos de caução
+    const possibleCautionFields = [
+        'retentionValue',
+        'warrantyValue', 
+        'guaranteeValue',
+        'depositValue',
+        'cautionValue'
+    ];
+    
+    for (const field of possibleCautionFields) {
+        const fieldValue = parseFloat(contract[field] || 0);
+        if (fieldValue > 0) {
+            console.log(`💰 CAUÇÃO - Contrato ${contract.contractNumber}: ${field} R$ ${fieldValue}`);
+            return fieldValue;
+        }
+    }
+    
+    console.log(`💰 CAUÇÃO - Contrato ${contract.contractNumber}: Nenhuma caução configurada (R$ 0)`);
     return 0;
 }
 

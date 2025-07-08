@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "build": "echo \"No build step required for this project. Use npm start or npm run dev to run the server.\""
+    "build": "node server.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
