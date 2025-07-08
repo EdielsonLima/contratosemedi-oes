@@ -32,6 +32,22 @@ async function fetchWithRetry(url, options = {}, retries = RETRY_CONFIG.maxRetri
             });
             
             clearTimeout(timeoutId);
+            
+            // Check for transient HTTP errors that should be retried
+            const isTransientHttpError = !response.ok && (
+                (response.status >= 500 && response.status <= 599) || // 5xx server errors
+                response.status === 429 // Too Many Requests
+            );
+            
+            if (isTransientHttpError && attempt < retries) {
+                console.log(`⚠️ Tentativa ${attempt}/${retries} falhou para ${url}: HTTP ${response.status} ${response.statusText}`);
+                console.log(`🔄 Tentando novamente em ${RETRY_CONFIG.retryDelay}ms...`);
+                
+                // Aguardar antes da próxima tentativa
+                await new Promise(resolve => setTimeout(resolve, RETRY_CONFIG.retryDelay));
+                continue;
+            }
+            
             return response;
             
         } catch (error) {
