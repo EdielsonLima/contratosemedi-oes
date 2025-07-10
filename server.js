@@ -16,7 +16,7 @@ const PORT = process.env.PORT || 5000;
 const RETRY_CONFIG = {
     maxRetries: 3,
     retryDelay: 2000, // 2 segundos
-    timeout: 15000 // 15 segundos
+    timeout: 30000 // 30 segundos
 };
 
 // Função utilitária para fazer requisições com retry e timeout
